@@ -8,8 +8,8 @@ git repos.
 
 from __future__ import print_function
 
-import os
-import subprocess
+import os, subprocess, sys
+from ConfigParser import ConfigParser
 from twisted.application import service, internet
 from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
@@ -51,13 +51,14 @@ logfile = DailyLogFile("git-poller.log", "/tmp")
 application = service.Application("Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-repos = ["git://github.com/flihp/meta-measured.git",
-         "git://github.com/openembedded/openembedded-core.git",
-         "git://git.yoctoproject.org/meta-intel"]
-basedir = "/tmp"
+config = ConfigParser ()
+config.read ("./git-poller.conf")
+
+basedir = config.get ("default", "basedir")
 os.chdir(basedir)
-for repo in repos:
-    fetcher = GitFetcher (repo, basedir)
+for repo_tuple in config.items ('repos'):
+    logfile.write ("Creating fetcher for {0} with URL {1}\n".format (repo_tuple [0], repo_tuple [1]))
+    fetcher = GitFetcher (repo_tuple[1], basedir)
     loopreact = internet.TimerService (step=60, callable=fetcher.poll)
     loopreact.setServiceParent (application)
 
