@@ -14,51 +14,51 @@ from twisted.application import service, internet
 from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
 
-basedir = "/tmp"
-
-logfile = DailyLogFile("git-poller.log", "/tmp")
-
-# this is the core part of any tac file, the creation of the root-level
-# application object
-application = service.Application("Git Poller")
-application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
-
 class GitFetcher(object):
     """ Class to fetch git repos
     """
-    def __init__(self, repolist = [], basedir = "/tmp"):
-        self.repolist = repolist
-        self.basedir = basedir + "/"
+
+    def __init__(self, repo_url = None, basedir = "/tmp"):
+        self.repo_url = repo_url
+        self.basedir = basedir
+        self.repo_name = self.repo_url.split("/")[-1].split(".")[0]
+        self.repo_path = self.basedir + "/" + self.repo_name
 
     def poll(self):
-        if self.repolist is not {}:
-            for repo_url in self.repolist:
-                repo_name = repo_url.split("/")[-1].split(".")[0]
-                repo_path = self.basedir + "/" + repo_name
-                print("fetching repo %s from URL %s into %s", repo_name, repo_url, repo_path)
-                try:
-                    if not os.path.exists(repo_path):
-                        subprocess.check_output(["git", "clone", repo_url],
-
-        	                                stderr=subprocess.STDOUT)
-                    elif os.path.isdir(repo_path):
-                        os.chdir(repo_path)
-                        subprocess.check_output(["git", "fetch"],
-                                                stderr=subprocess.STDOUT)
-                        os.chdir(self.basedir)
-                    else:
-                        print("%s exists but isn't a directory, bad news", repo_path)
-                except subprocess.CalledProcessError, e:
-                    print("%s", e)
-                print("success polling repo: %s", repo_url)
-
+        if self.repo_url is not None:
+            print("fetching repo {0} from URL {1} into {2}".format(self.repo_name, self.repo_url, self.repo_path))
+            try:
+                if not os.path.exists(self.repo_path):
+                    os.chdir(self.basedir)
+                    subprocess.check_output(["git", "clone", self.repo_url],
+                                            stderr=subprocess.STDOUT)
+                elif os.path.isdir(self.repo_path):
+                    os.chdir(self.repo_path)
+                    subprocess.check_output(["git", "fetch"],
+                                            stderr=subprocess.STDOUT)
+                    os.chdir(self.basedir)
+                else:
+                    print("{0} exists but isn't a directory, bad news".format(self.repo_path))
+            except subprocess.CalledProcessError, e:
+               print("{0}".format(e))
+            print("success polling repo: {0}".format(self.repo_url))
         else:
-            print("repolist is empty, nothing to poll")
+            print("no repo url set, nothing to poll")
 
-gits = ["git://github.com/flihp/meta-measured.git"]
-gitpoll = GitFetcher(gits, basedir)
+# this is the core part of any tac file, the creation of the root-level
+# application object
+logfile = DailyLogFile("git-poller.log", "/tmp")
+application = service.Application("Git Poller")
+application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
+repos = ["git://github.com/flihp/meta-measured.git",
+         "git://github.com/openembedded/openembedded-core.git",
+         "git://git.yoctoproject.org/meta-intel"]
+basedir = "/tmp"
 os.chdir(basedir)
-loopreact = internet.TimerService(step=60*5, callable=gitpoll.poll)
-loopreact.setServiceParent(application)
+for repo in repos:
+    print("Creating fetcher for {0}".format(repo))
+    fetcher = GitFetcher (repo, basedir)
+    loopreact = internet.TimerService (step=60, callable=fetcher.poll)
+    loopreact.setServiceParent (application)
 
