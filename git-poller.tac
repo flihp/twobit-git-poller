@@ -47,14 +47,15 @@ class GitFetcher(object):
 
 # this is the core part of any tac file, the creation of the root-level
 # application object
-logfile = DailyLogFile("git-poller.log", "/tmp")
+config = ConfigParser ()
+config.read ("./git-poller.conf")
+basedir = config.get ("default", "basedir")
+logfile = config.get ("default", "logfile")
+
+logfile = DailyLogFile(logfile, basedir)
 application = service.Application("Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-config = ConfigParser ()
-config.read ("./git-poller.conf")
-
-basedir = config.get ("default", "basedir")
 os.chdir(basedir)
 for repo_tuple in config.items ('repos'):
     logfile.write ("Creating fetcher for {0} with URL {1}\n".format (repo_tuple [0], repo_tuple [1]))
