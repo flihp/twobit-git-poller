@@ -57,7 +57,6 @@ repos = ["git://github.com/flihp/meta-measured.git",
 basedir = "/tmp"
 os.chdir(basedir)
 for repo in repos:
-    print("Creating fetcher for {0}".format(repo))
     fetcher = GitFetcher (repo, basedir)
     loopreact = internet.TimerService (step=60, callable=fetcher.poll)
     loopreact.setServiceParent (application)
