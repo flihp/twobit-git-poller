@@ -45,8 +45,7 @@ class GitFetcher(object):
         else:
             print("no repo url set, nothing to poll")
 
-# this is the core part of any tac file, the creation of the root-level
-# application object
+# get application config values
 config = ConfigParser ()
 config.read ("./oxt-git-poller.conf")
 basedir = config.get ("default", "basedir")
@@ -59,6 +58,8 @@ application = service.Application("OpenXT Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 os.chdir(basedir)
+# Iterate over repos from config file
+# For each: create GitFetcher that will poll on top level interval
 for repo_tuple in config.items ('repos'):
     logfile.write ("Creating fetcher for {0} with URL {1}\n".format (repo_tuple [0], repo_tuple [1]))
     fetcher = GitFetcher (repo_tuple[1], basedir)
