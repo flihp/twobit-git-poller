@@ -47,22 +47,23 @@ class GitFetcher(object):
 
 # get application config values
 config = ConfigParser ()
-config.read ("./oxt-git-poller.conf")
-basedir = config.get ("default", "basedir")
+config.read ("/etc/oxt-git-poller/oxt-git-poller.conf")
+gitdir = config.get ("default", "gitdir")
+logdir = config.get ("default", "logdir")
 logfile = config.get ("default", "logfile")
 # use eval here to allow intervals like 60*5 to get 5 minutes
 poll_interval = float (eval (config.get ("default", "poll-interval")))
 
-logfile = DailyLogFile(logfile, basedir)
+logfile = DailyLogFile(logfile, logdir)
 application = service.Application("OpenXT Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-os.chdir(basedir)
+os.chdir(gitdir)
 # Iterate over repos from config file
 # For each: create GitFetcher that will poll on top level interval
 for repo_tuple in config.items ('repos'):
     logfile.write ("Creating fetcher for {0} with URL {1}\n".format (repo_tuple [0], repo_tuple [1]))
-    fetcher = GitFetcher (repo_tuple[1], basedir)
+    fetcher = GitFetcher (repo_tuple[1], gitdir)
     loopreact = internet.TimerService (step=poll_interval,
                                        callable=fetcher.poll)
     loopreact.setServiceParent (application)
