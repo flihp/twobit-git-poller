@@ -7,7 +7,7 @@ tacconfpath = $(tacconfdir)/$(tacconffile)
 tacconf_DATA = $(tacconffile)
 taclogdir = $(localstatedir)/log/@PACKAGE@
 taclibdir = $(localstatedir)/lib/@PACKAGE@
-CLEANFILES = $(tacdata_DATA)
+CLEANFILES = $(tacdata_DATA) $(tacconf_DATA)
 SUFFIXES = .in
 
 $(tacdata_DATA): $(tacdata_DATA).in Makefile
