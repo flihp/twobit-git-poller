@@ -8,11 +8,12 @@ tacconf_DATA = $(tacconffile)
 taclogdir = $(localstatedir)/log/@PACKAGE@
 taclibdir = $(localstatedir)/lib/@PACKAGE@
 CLEANFILES = $(tacdata_DATA)
-SUFFIXES = .tac .conf .in
+SUFFIXES = .in
 
 $(tacdata_DATA): $(tacdata_DATA).in Makefile
-	$(do_subst) < $< > $@
 $(tacconf_DATA): $(tacconf_DATA).in Makefile
+
+.in:
 	$(do_subst) < $< > $@
 
 do_subst = sed -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
