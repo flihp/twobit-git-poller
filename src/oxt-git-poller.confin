@@ -1,6 +1,6 @@
 [default]
-gitdir = /var/lib/oxt-git-poller
-logdir = /var/log/oxt-git-poller
+gitdir = @LIBDIR@
+logdir = @LOGDIR@
 logfile = oxt-git-poller.log
 poll-interval = 60*5
 
