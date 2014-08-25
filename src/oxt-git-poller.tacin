@@ -62,7 +62,7 @@ class GitFetcher(object):
 
 # get application config values
 config = ConfigParser ()
-config.read ("/etc/oxt-git-poller/oxt-git-poller.conf")
+config.read ("@CONFFILE@")
 gitdir = config.get ("default", "gitdir")
 logdir = config.get ("default", "logdir")
 logfile = config.get ("default", "logfile")
