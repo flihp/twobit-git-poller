@@ -10,4 +10,6 @@ install-sh
 missing
 src/Makefile
 src/Makefile.in
+src/oxt-git-poller.conf
+src/oxt-git-poller.tac
 
