@@ -36,8 +36,12 @@ class GitFetcher(object):
     def __init__(self, repo_url = None, basedir = "/tmp"):
         self.repo_url = repo_url
         self.basedir = basedir
-        self.repo_name = self.repo_url.split("/")[-1].split(".")[0]
+        self.repo_name = self.repo_url.split("/")[-1]
         self.repo_path = self.basedir + "/" + self.repo_name
+        # cloning bare repos adds '.git' to end of directory name even if URI
+        # doesn't have one
+        if self.repo_path[-4:] != '.git':
+            self.repo_path = self.repo_path + '.git'
 
     def poll(self):
         if self.repo_url is not None:
