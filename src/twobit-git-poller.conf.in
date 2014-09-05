@@ -1,7 +1,7 @@
 [default]
 gitdir = @LIBDIR@
 logdir = @LOGDIR@
-logfile = oxt-git-poller.log
+logfile = @PACKAGE@.log
 poll-interval = 60*5
 
 [repos]
