@@ -5,6 +5,7 @@ logfile = @PACKAGE@.log
 poll-interval = 60*5
 
 [repos]
+bitbake = git://github.com/openembedded/bitbake.git
 meta-measured = git://github.com/flihp/meta-measured.git
 openembedded-core = git://github.com/openembedded/openembedded-core.git
 meta-intel = git://git.yoctoproject.org/meta-intel
