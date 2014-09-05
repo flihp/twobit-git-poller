@@ -45,7 +45,8 @@ class GitFetcher(object):
             try:
                 if not os.path.exists(self.repo_path):
                     os.chdir(self.basedir)
-                    subprocess.check_output(["git", "clone", self.repo_url],
+                    subprocess.check_output(["git", "clone", "--bare",
+                                            self.repo_url],
                                             stderr=subprocess.STDOUT)
                 elif os.path.isdir(self.repo_path):
                     os.chdir(self.repo_path)
