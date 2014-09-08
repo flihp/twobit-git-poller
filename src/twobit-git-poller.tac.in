@@ -1,4 +1,4 @@
-# This program is the OpenXT git fetcher. It's a simple twisted
+# This program is my git fetcher. It's a simple twisted
 # application that periodically polls the specified git repos.
 # Copyright (C) 2014  Philip Tricca <flihp@twobit.us>
 #
@@ -93,7 +93,7 @@ logfile = config.get ("DEFAULT", "logfile")
 poll_interval = float (eval (config.get ("DEFAULT", "poll-interval")))
 
 logfile = DailyLogFile(logfile, logdir)
-application = service.Application("OpenXT Git Poller")
+application = service.Application("twobit Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 os.chdir(basedir)
