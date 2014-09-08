@@ -65,25 +65,46 @@ class GitFetcher(object):
         else:
             print("no repo url set, nothing to poll")
 
+def fetcher_from_gitrepo (config, section):
+    if not config.has_option (section, 'basedir'):
+        sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
+    basedir = config.get (section, 'basedir')
+    if not config.has_option (section, 'url'):
+        sys.exit ('Git repo section {0} missing required option "url"\n'.format (section))
+    url = config.get (section, 'url')
+    logfile.write ("Creating fetcher for git repo named {0} with url {1}\n".format (section, url))
+    if config.has_option (section, 'subdir'):
+        destdir = basedir + config.get (section, 'subdir')
+    else:
+        destdir = basedir
+    if not os.path.lexists (destdir):
+        os.mkdir (destdir)
+    elif not os.path.isdir (destdir):
+        sys.exit ("Requested directory in section {0} exists but isn't a directory.\n".format (section))
+    return GitFetcher (url, destdir)
+ 
 # get application config values
 config = ConfigParser ()
 config.read ("@CONFFILE@")
-gitdir = config.get ("default", "gitdir")
-logdir = config.get ("default", "logdir")
-logfile = config.get ("default", "logfile")
+basedir = config.get ("DEFAULT", "basedir")
+logdir = config.get ("DEFAULT", "logdir")
+logfile = config.get ("DEFAULT", "logfile")
 # use eval here to allow intervals like 60*5 to get 5 minutes
-poll_interval = float (eval (config.get ("default", "poll-interval")))
+poll_interval = float (eval (config.get ("DEFAULT", "poll-interval")))
 
 logfile = DailyLogFile(logfile, logdir)
 application = service.Application("OpenXT Git Poller")
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-os.chdir(gitdir)
+os.chdir(basedir)
 # Iterate over repos from config file
 # For each: create GitFetcher that will poll on top level interval
-for repo_tuple in config.items ('repos'):
-    logfile.write ("Creating fetcher for {0} with URL {1}\n".format (repo_tuple [0], repo_tuple [1]))
-    fetcher = GitFetcher (repo_tuple[1], gitdir)
+for section in config.sections ():
+    type = config.get (section, 'type')
+    if type == 'git':
+        fetcher = fetcher_from_gitrepo (config, section)
+    else:
+        raise NotImplementedError ('Config section type {0} is not implemented.\n'.format (type))
     loopreact = internet.TimerService (step=poll_interval,
                                        callable=fetcher.poll)
     loopreact.setServiceParent (application)

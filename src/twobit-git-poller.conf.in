@@ -1,12 +1,25 @@
-[default]
-gitdir = @LIBDIR@
+[DEFAULT]
+basedir = @LIBDIR@
 logdir = @LOGDIR@
 logfile = @PACKAGE@.log
 poll-interval = 60*5
 
-[repos]
-bitbake = git://github.com/openembedded/bitbake.git
-meta-measured = git://github.com/flihp/meta-measured.git
-openembedded-core = git://github.com/openembedded/openembedded-core.git
-meta-intel = git://git.yoctoproject.org/meta-intel
-meta-selinux = git://github.com/flihp/meta-selinux.git
+[bitbake]
+type = git
+url = git://github.com/openembedded/bitbake.git
+
+[meta-measured]
+type = git
+url = git://github.com/flihp/meta-measured.git
+
+[openembedded-core]
+type = git
+url = git://github.com/openembedded/openembedded-core.git
+
+[meta-intel]
+type = git
+url = git://git.yoctoproject.org/meta-intel
+
+[meta-selinux]
+type = git
+url = git://github.com/flihp/meta-selinux.git
