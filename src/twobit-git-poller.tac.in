@@ -25,9 +25,11 @@ from __future__ import print_function
 
 import os, subprocess, sys
 from ConfigParser import ConfigParser
+from json import load
 from twisted.application import service, internet
 from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
+from urllib2 import urlopen, URLError
 
 class GitFetcher(object):
     """ Class to fetch git repos
@@ -65,6 +67,56 @@ class GitFetcher(object):
         else:
             print("no repo url set, nothing to poll")
 
+class GitHubOrgFetcher (object):
+    """ Poll github org finding each repo in the org.
+        For each repo we create a GitFetcher if one doesn't already exit and
+        we create a TimeService and hook it up to the application object.
+    """
+    _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
+    def __init__ (self, config, application):
+        self._application = application
+        self._config = config
+        self._fetchers = {}
+        self._orgname = config ['name']
+        self._poll_interval = float (eval (config ['poll-interval']))
+        self._url = self._GITHUB_REPO_URL.format (self._orgname)
+
+    def poll (self):
+        ''' Start with API URL to get first JSON doc with repos.
+            Subsequent URLs for HTTP requests will be in headers from github.
+            See: https://developer.github.com/v3/repos/
+        ''' 
+        nexturl = self._url
+        while nexturl != '':
+            print ('GitHubOrgFetcher: opening URL: {0}\n'.format (nexturl))
+            try:
+                github_req = urlopen (nexturl)
+            except URLError as err:
+                print ('GitHubOrgFetcher: URLError: {0}\n'.format (err.strerror))
+                break
+
+            # get repos and make fetchers for each
+            for repo in load (github_req):
+                if not repo ['git_url'] in self._fetchers:
+                    print ('GitHubOrgFetcher: Creating fetcher for repo: {0}\n'.format (repo ['git_url']))
+                    fetcher = fetcher_from_github (self._config, repo)
+                    self._fetchers [repo ['git_url']] = fetcher
+                    loopreact = internet.TimerService (step = self._poll_interval,
+                                                       callable = fetcher.poll)
+                    loopreact.setServiceParent (self._application)
+                else:
+                    print ('GitHubOrgFetcher: fetcher for repo {0} already exists\n'.format (repo ['git_url']))
+
+            # find the 'next' link from the link header (if it exists)
+            headers = github_req.info ()
+            for link in headers ['link'].split (','):
+                link_elements = link.strip ().split (';')
+                if link_elements[-1].strip () == 'rel="next"':
+                    nexturl = link_elements[0].strip (' \t\n\r<>')
+                    break
+                else:
+                    nexturl = ''
+
 def fetcher_from_gitrepo (config, section):
     if not config.has_option (section, 'basedir'):
         sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
@@ -82,7 +134,24 @@ def fetcher_from_gitrepo (config, section):
     elif not os.path.isdir (destdir):
         sys.exit ("Requested directory in section {0} exists but isn't a directory.\n".format (section))
     return GitFetcher (url, destdir)
- 
+
+def fetcher_from_github (config, repo):
+    if not 'basedir' in config:
+        sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
+    if 'subdir' in config:
+        destdir = '{0}/{1}'.format (config ['basedir'],
+                                    config ['subdir'])
+    else:
+        destdir = config ['basedir']
+    if not 'git_url' in repo:
+        sys.exit ('Github repo has no git_url?')
+    if not os.path.lexists (destdir):
+        os.makedirs (destdir)
+    elif not os.path.isdir (destdir):
+        sys.exit ('Required directory {0} for github repo {1} exists but is not a directory.\n'.format (destdir, repo ['name']))
+    logfile.write ('Creating GitFetcher ({0}, {1}\n'.format (repo ['git_url'], destdir))
+    return GitFetcher (repo ['git_url'], destdir)
+
 # get application config values
 config = ConfigParser ()
 config.read ("@CONFFILE@")
@@ -103,6 +172,11 @@ for section in config.sections ():
     type = config.get (section, 'type')
     if type == 'git':
         fetcher = fetcher_from_gitrepo (config, section)
+    elif type == 'org':
+        github_config = dict (config.items (section))
+        if not 'name' in github_config:
+            sys.exit ('Required section missing from org: name\n')
+        fetcher = GitHubOrgFetcher (github_config, application)
     else:
         raise NotImplementedError ('Config section type {0} is not implemented.\n'.format (type))
     loopreact = internet.TimerService (step=poll_interval,

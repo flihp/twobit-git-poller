@@ -23,3 +23,8 @@ url = git://git.yoctoproject.org/meta-intel
 [meta-selinux]
 type = git
 url = git://github.com/flihp/meta-selinux.git
+
+[openxt]
+type = org
+name = openxt
+subdir = openxt
