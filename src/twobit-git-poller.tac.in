@@ -85,12 +85,12 @@ class GitHubOrgFetcher (object):
     TimeService and hook it up to the supplied application object.
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
-    def __init__ (self, config, application):
+    def __init__ (self, application, orgname, destdir, poll_interval=300):
         self._application = application
-        self._config = config
+        self._destdir = destdir
         self._fetchers = {}
-        self._orgname = config ['name']
-        self._poll_interval = float (eval (config ['poll-interval']))
+        self._orgname = orgname
+        self._poll_interval = poll_interval
         self._url = self._GITHUB_REPO_URL.format (self._orgname)
 
     def poll (self):
@@ -120,7 +120,7 @@ class GitHubOrgFetcher (object):
             for repo in load (github_req):
                 if not repo ['git_url'] in self._fetchers:
                     print ('GitHubOrgFetcher: Creating fetcher for repo: {0}\n'.format (repo ['git_url']))
-                    fetcher = fetcher_from_github (self._config, repo)
+                    fetcher = self._fetcher_from_github (repo)
                     self._fetchers [repo ['git_url']] = fetcher
                     loopreact = internet.TimerService (step = self._poll_interval,
                                                        callable = fetcher.poll)
@@ -140,6 +140,18 @@ class GitHubOrgFetcher (object):
                 else:
                     nexturl = ''
 
+    def _fetcher_from_github (self, repo):
+        """ Create GitFetcher from GitHub repo dictionary.
+        """
+        if not 'git_url' in repo:
+            sys.exit ('Github repo has no git_url?')
+        if not os.path.lexists (self._destdir):
+            os.makedirs (self._destdir)
+        elif not os.path.isdir (self._destdir):
+            sys.exit ('Required directory {0} for github repo {1} exists but is not a directory.\n'.format (self._destdir, repo ['name']))
+        logfile.write ('Creating GitFetcher ({0}, {1}\n'.format (repo ['git_url'], self._destdir))
+        return GitFetcher (repo ['git_url'], self._destdir)
+
 def fetcher_from_gitrepo (config, section):
     if not config.has_option (section, 'basedir'):
         sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
@@ -158,31 +170,14 @@ def fetcher_from_gitrepo (config, section):
         sys.exit ('Requested directory in section {0} exists but is not a directory.\n'.format (section))
     return GitFetcher (url, destdir)
 
-def fetcher_from_github (config, repo):
-    if not 'basedir' in config:
-        sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
-    if 'subdir' in config:
-        destdir = '{0}/{1}'.format (config ['basedir'],
-                                    config ['subdir'])
-    else:
-        destdir = config ['basedir']
-    if not 'git_url' in repo:
-        sys.exit ('Github repo has no git_url?')
-    if not os.path.lexists (destdir):
-        os.makedirs (destdir)
-    elif not os.path.isdir (destdir):
-        sys.exit ('Required directory {0} for github repo {1} exists but is not a directory.\n'.format (destdir, repo ['name']))
-    logfile.write ('Creating GitFetcher ({0}, {1}\n'.format (repo ['git_url'], destdir))
-    return GitFetcher (repo ['git_url'], destdir)
-
 # get application config values
 config = ConfigParser ()
 config.read ('@CONFFILE@')
 basedir = config.get ('DEFAULT', 'basedir')
 logdir = config.get ('DEFAULT', 'logdir')
 logfile = config.get ('DEFAULT', 'logfile')
-# use eval here to allow intervals like 60*5 to get 5 minutes
-poll_interval = float (eval (config.get ('DEFAULT', 'poll-interval')))
+# conservative default polling interval
+poll_interval_default = 1200
 
 logfile = DailyLogFile(logfile, logdir)
 application = service.Application('twobit Git Poller')
@@ -190,16 +185,34 @@ application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 os.chdir(basedir)
 # Iterate over repos from config file
-# For each: create GitFetcher that will poll on top level interval
 for section in config.sections ():
+    # Get config values, use defaults if necessary.
+    config_dict = dict (config.items (section))
+    if 'poll-interval' in config_dict:
+        poll_interval = float (eval (config_dict ['poll-interval']))
+    else:
+        poll_interval = poll_interval_default
+    if not 'basedir' in config_dict:
+        sys.exit ('Required config item missing from org: basedir\n')
+    basedir = config_dict ['basedir']
+    if 'subdir' in config_dict:
+        destdir = basedir + '/' + config_dict ['subdir']
+    else:
+        destdir = basedir
+
+    # Create objects to fetch git stuff specific to 'type' from config.
     type = config.get (section, 'type')
     if type == 'git':
         fetcher = fetcher_from_gitrepo (config, section)
     elif type == 'org':
-        github_config = dict (config.items (section))
-        if not 'name' in github_config:
+        # sanity check GitHub org config
+        if not 'name' in config_dict:
             sys.exit ('Required section missing from org: name\n')
-        fetcher = GitHubOrgFetcher (github_config, application)
+        # make the fetcher
+        fetcher = GitHubOrgFetcher (application = application,
+                                    orgname = config_dict ['name'],
+                                    destdir = destdir,
+                                    poll_interval = poll_interval)
     else:
         raise NotImplementedError ('Config section type {0} is not implemented.\n'.format (type))
     loopreact = internet.TimerService (step=poll_interval,
