@@ -16,9 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-"""
-This tac file defines an application that periodically fetches a collection of
-git repos.
+""" twobit git poller
+
+This tac file defines an application that periodically fetches a
+collection of git repos.  Repos are descriped in the accompanying INI-
+style configuration file.
 """
 
 from __future__ import print_function
@@ -32,45 +34,55 @@ from twisted.python.logfile import DailyLogFile
 from urllib2 import urlopen, URLError
 
 class GitFetcher(object):
-    """ Class to fetch git repos
+    """ GitFetcher class
+    
+    Give this class a URL for a git repo and it will fetch it for you.
     """
 
-    def __init__(self, repo_url = None, basedir = "/tmp"):
+    def __init__(self, repo_url = None, basedir = '/tmp'):
         self.repo_url = repo_url
         self.basedir = basedir
-        self.repo_name = self.repo_url.split("/")[-1]
-        self.repo_path = self.basedir + "/" + self.repo_name
+        self.repo_name = self.repo_url.split('/')[-1]
+        self.repo_path = self.basedir + '/' + self.repo_name
         # cloning bare repos adds '.git' to end of directory name even if URI
         # doesn't have one
         if self.repo_path[-4:] != '.git':
             self.repo_path = self.repo_path + '.git'
 
     def poll(self):
+        """ Poll a git repo.
+        
+        Each call to the 'poll' method will do exactly what you expect:
+        the repository will be polled and updated. If the repo exists
+        locally it's fetched, otherwised a bare clone is made.
+        """
         if self.repo_url is not None:
-            print("fetching repo {0} from URL {1} into {2}".format(self.repo_name, self.repo_url, self.repo_path))
+            print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
             try:
                 if not os.path.exists(self.repo_path):
                     os.chdir(self.basedir)
-                    subprocess.check_output(["git", "clone", "--bare",
+                    subprocess.check_output(['git', 'clone', '--bare',
                                             self.repo_url],
                                             stderr=subprocess.STDOUT)
                 elif os.path.isdir(self.repo_path):
                     os.chdir(self.repo_path)
-                    subprocess.check_output(["git", "fetch"],
+                    subprocess.check_output(['git', 'fetch'],
                                             stderr=subprocess.STDOUT)
                     os.chdir(self.basedir)
                 else:
-                    print("{0} exists but isn't a directory, bad news".format(self.repo_path))
+                    print('{0} exists but is not a directory, bad news'.format(self.repo_path))
             except subprocess.CalledProcessError, e:
-               print("{0}".format(e))
-            print("success polling repo: {0}".format(self.repo_url))
+               print('{0}'.format(e))
+            print('success polling repo: {0}'.format(self.repo_url))
         else:
-            print("no repo url set, nothing to poll")
+            print('no repo url set, nothing to poll')
 
 class GitHubOrgFetcher (object):
-    """ Poll github org finding each repo in the org.
-        For each repo we create a GitFetcher if one doesn't already exit and
-        we create a TimeService and hook it up to the application object.
+    """ Fetch and poll all repos from a GitHub org.
+    
+    Poll github org finding each repo in the org.  For each repo we
+    create a GitFetcher if one doesn't already exit and we create a
+    TimeService and hook it up to the supplied application object.
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
     def __init__ (self, config, application):
@@ -82,10 +94,17 @@ class GitHubOrgFetcher (object):
         self._url = self._GITHUB_REPO_URL.format (self._orgname)
 
     def poll (self):
-        ''' Start with API URL to get first JSON doc with repos.
-            Subsequent URLs for HTTP requests will be in headers from github.
-            See: https://developer.github.com/v3/repos/
-        ''' 
+        """ Poll all repos from a GitHub org.
+        
+        This function operates on data from the constructior.  First
+        data about each repo from the specified GitHub org is retrieved
+        via the GitHub API. Then a GitFetcher is created for each repo.
+        A twisted TimeService with the appropriate poll interval is
+        then created for each repo from the org.  Upon subsequent
+        invocations new GitFetchers are created for new repos.
+
+        See: https://developer.github.com/v3/repos/
+        """ 
         nexturl = self._url
         while nexturl != '':
             print ('GitHubOrgFetcher: opening URL: {0}\n'.format (nexturl))
@@ -95,7 +114,9 @@ class GitHubOrgFetcher (object):
                 print ('GitHubOrgFetcher: URLError: {0}\n'.format (err.strerror))
                 break
 
-            # get repos and make fetchers for each
+            # Get repos from the JSON body of the request.  If a
+            # GitFetcher for this repo doesn't already exist create
+            # one.
             for repo in load (github_req):
                 if not repo ['git_url'] in self._fetchers:
                     print ('GitHubOrgFetcher: Creating fetcher for repo: {0}\n'.format (repo ['git_url']))
@@ -107,7 +128,9 @@ class GitHubOrgFetcher (object):
                 else:
                     print ('GitHubOrgFetcher: fetcher for repo {0} already exists\n'.format (repo ['git_url']))
 
-            # find the 'next' link from the link header (if it exists)
+            # Find the 'next' link from the link header (if it exists).
+            # If no 'next' link exists we're at the end of the Org's
+            # repos.
             headers = github_req.info ()
             for link in headers ['link'].split (','):
                 link_elements = link.strip ().split (';')
@@ -124,7 +147,7 @@ def fetcher_from_gitrepo (config, section):
     if not config.has_option (section, 'url'):
         sys.exit ('Git repo section {0} missing required option "url"\n'.format (section))
     url = config.get (section, 'url')
-    logfile.write ("Creating fetcher for git repo named {0} with url {1}\n".format (section, url))
+    logfile.write ('Creating fetcher for git repo named {0} with url {1}\n'.format (section, url))
     if config.has_option (section, 'subdir'):
         destdir = basedir + config.get (section, 'subdir')
     else:
@@ -132,7 +155,7 @@ def fetcher_from_gitrepo (config, section):
     if not os.path.lexists (destdir):
         os.mkdir (destdir)
     elif not os.path.isdir (destdir):
-        sys.exit ("Requested directory in section {0} exists but isn't a directory.\n".format (section))
+        sys.exit ('Requested directory in section {0} exists but is not a directory.\n'.format (section))
     return GitFetcher (url, destdir)
 
 def fetcher_from_github (config, repo):
@@ -154,15 +177,15 @@ def fetcher_from_github (config, repo):
 
 # get application config values
 config = ConfigParser ()
-config.read ("@CONFFILE@")
-basedir = config.get ("DEFAULT", "basedir")
-logdir = config.get ("DEFAULT", "logdir")
-logfile = config.get ("DEFAULT", "logfile")
+config.read ('@CONFFILE@')
+basedir = config.get ('DEFAULT', 'basedir')
+logdir = config.get ('DEFAULT', 'logdir')
+logfile = config.get ('DEFAULT', 'logfile')
 # use eval here to allow intervals like 60*5 to get 5 minutes
-poll_interval = float (eval (config.get ("DEFAULT", "poll-interval")))
+poll_interval = float (eval (config.get ('DEFAULT', 'poll-interval')))
 
 logfile = DailyLogFile(logfile, logdir)
-application = service.Application("twobit Git Poller")
+application = service.Application('twobit Git Poller')
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 os.chdir(basedir)
