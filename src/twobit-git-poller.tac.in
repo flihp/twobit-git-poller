@@ -68,15 +68,16 @@ class GitFetcher(object):
         print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
         try:
             if not os.path.exists(self.repo_path):
-                os.chdir(self.basedir)
-                subprocess.check_output(['git', 'clone', '--bare',
-                                        self.repo_url],
-                                        stderr=subprocess.STDOUT)
+                subprocess.check_output (
+                    ['git', 'clone', '--bare', self.repo_url,
+                     self.repo_path],
+                    stderr=subprocess.STDOUT
+                )
             elif os.path.isdir(self.repo_path):
-                os.chdir(self.repo_path)
-                subprocess.check_output(['git', 'fetch'],
-                                        stderr=subprocess.STDOUT)
-                os.chdir(self.basedir)
+                subprocess.check_output (
+                    ['git', '--git-dir=' + self.repo_path, 'fetch'],
+                    stderr=subprocess.STDOUT
+                )
             else:
                print('{0} exists but is not a directory, bad news'.format(self.repo_path))
         except subprocess.CalledProcessError, e:
@@ -161,7 +162,6 @@ class GitHubOrgFetcher (object):
 # get application config values
 config = ConfigParser ()
 config.read ('@CONFFILE@')
-basedir = config.get ('DEFAULT', 'basedir')
 logdir = config.get ('DEFAULT', 'logdir')
 logfile = config.get ('DEFAULT', 'logfile')
 # conservative default polling interval
@@ -171,7 +171,6 @@ logfile = DailyLogFile(logfile, logdir)
 application = service.Application('twobit Git Poller')
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-os.chdir(basedir)
 # Iterate over repos from config file
 for section in config.sections ():
     # Get config values, use defaults if necessary.
