@@ -80,9 +80,9 @@ class GitFetcher(object):
                 )
             else:
                print('{0} exists but is not a directory, bad news'.format(self.repo_path))
+            print('success polling repo: {0}'.format(self.repo_url))
         except subprocess.CalledProcessError, e:
            print('{0}'.format(e))
-        print('success polling repo: {0}'.format(self.repo_url))
 
 class GitHubOrgFetcher (object):
     """ Fetch and poll all repos from a GitHub org.
