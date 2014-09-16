@@ -3,33 +3,27 @@ basedir = @LIBDIR@
 logdir = @LOGDIR@
 logfile = @PACKAGE@.log
 poll-interval = 60*5
+type = git
 
 [bitbake]
-type = git
 url = git://github.com/openembedded/bitbake.git
 
 [meta-measured]
-type = git
 url = git://github.com/flihp/meta-measured.git
 
 [openembedded-core]
-type = git
 url = git://github.com/openembedded/openembedded-core.git
 
 [meta-openembedded]
-type = git
 url = git://github.com/openembedded/meta-openembedded.git
 
 [meta-intel]
-type = git
 url = git://git.yoctoproject.org/meta-intel
 
 [meta-selinux]
-type = git
 url = git://github.com/flihp/meta-selinux.git
 
 [meta-java]
-type = git
 url = git://github.com/woglinde/meta-java.git
 
 [openxt]
