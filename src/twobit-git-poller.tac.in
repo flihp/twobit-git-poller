@@ -58,23 +58,22 @@ class GitFetcher(object):
         """
         # sanity check config and directory structure
         if self.repo_url is None:
-            print ('GitFetcher: no repo url set, nothing to poll.')
+            print('GitFetcher: no repo url set, nothing to poll.')
             return
-        if not os.path.lexists (self.basedir):
-            os.mkdir (self.basedir)
-        elif not os.path.isdir (self.basedir):
-            print ('GitFetcher: {0} exists but is not a directory. Aborting'.format (self.basedir))
+        if not os.path.lexists(self.basedir):
+            os.mkdir(self.basedir)
+        elif not os.path.isdir(self.basedir):
+            print('GitFetcher: {0} exists but is not a directory. Aborting'.format(self.basedir))
 
         print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
         try:
             if not os.path.exists(self.repo_path):
-                subprocess.check_output (
-                    ['git', 'clone', '--bare', self.repo_url,
-                     self.repo_path],
+                subprocess.check_output(
+                    ['git', 'clone', '--bare', self.repo_url, self.repo_path],
                     stderr=subprocess.STDOUT
-                )
+                    )
             elif os.path.isdir(self.repo_path):
-                subprocess.check_output (
+                subprocess.check_output(
                     ['git', '--git-dir=' + self.repo_path, 'fetch'],
                     stderr=subprocess.STDOUT
                 )
@@ -84,7 +83,7 @@ class GitFetcher(object):
         except subprocess.CalledProcessError, e:
            print('{0}'.format(e))
 
-class GitHubOrgFetcher (object):
+class GitHubOrgFetcher(object):
     """ Fetch and poll all repos from a GitHub org.
     
     Poll github org finding each repo in the org.  For each repo we
@@ -92,15 +91,15 @@ class GitHubOrgFetcher (object):
     TimeService and hook it up to the supplied application object.
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
-    def __init__ (self, application, orgname, destdir, poll_interval=300):
+    def __init__(self, application, orgname, destdir, poll_interval=300):
         self._application = application
         self._destdir = destdir
         self._fetchers = {}
         self._orgname = orgname
         self._poll_interval = poll_interval
-        self._url = self._GITHUB_REPO_URL.format (self._orgname)
+        self._url = self._GITHUB_REPO_URL.format(self._orgname)
 
-    def poll (self):
+    def poll(self):
         """ Poll all repos from a GitHub org.
         
         This function operates on data from the constructior.  First
@@ -114,58 +113,58 @@ class GitHubOrgFetcher (object):
         """ 
         nexturl = self._url
         while nexturl != '':
-            print ('GitHubOrgFetcher: opening URL: {0}'.format (nexturl))
+            print('GitHubOrgFetcher: opening URL: {0}'.format(nexturl))
             try:
-                github_req = urlopen (nexturl)
+                github_req = urlopen(nexturl)
             except URLError as err:
-                print ('GitHubOrgFetcher: URLError: {0}'.format (err.strerror))
+                print('GitHubOrgFetcher: URLError: {0}'.format(err.strerror))
                 break
 
             # Get repos from the JSON body of the request.  If a
             # GitFetcher for this repo doesn't already exist create
             # one.
-            for repo in load (github_req):
-                if not repo ['git_url'] in self._fetchers:
-                    print ('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format (repo ['git_url']))
-                    fetcher = self._fetcher_from_github (repo)
-                    self._fetchers [repo ['git_url']] = fetcher
-                    loopreact = internet.TimerService (
+            for repo in load(github_req):
+                if not repo['git_url'] in self._fetchers:
+                    print('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format(repo['git_url']))
+                    fetcher = self._fetcher_from_github(repo)
+                    self._fetchers[repo['git_url']] = fetcher
+                    loopreact = internet.TimerService(
                         step = self._poll_interval,
                         callable = fetcher.poll
                     )
-                    loopreact.setServiceParent (self._application)
+                    loopreact.setServiceParent(self._application)
                 else:
-                    print ('GitHubOrgFetcher: fetcher for repo {0} already exists'.format (repo ['git_url']))
+                    print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))
 
             # Find the 'next' link from the link header (if it exists).
             # If no 'next' link exists we're at the end of the Org's
             # repos.
-            headers = github_req.info ()
-            for link in headers ['link'].split (','):
-                link_elements = link.strip ().split (';')
-                if link_elements[-1].strip () == 'rel="next"':
-                    nexturl = link_elements[0].strip (' \t\n\r<>')
+            headers = github_req.info()
+            for link in headers['link'].split(','):
+                link_elements = link.strip().split(';')
+                if link_elements[-1].strip() == 'rel="next"':
+                    nexturl = link_elements[0].strip(' \t\n\r<>')
                     break
                 else:
                     nexturl = ''
 
-    def _fetcher_from_github (self, repo):
+    def _fetcher_from_github(self, repo):
         """ Create GitFetcher from GitHub repo dictionary.
         """
         if not 'git_url' in repo:
-            sys.exit ('Github repo has no git_url?')
-        if not os.path.lexists (self._destdir):
-            os.makedirs (self._destdir)
-        elif not os.path.isdir (self._destdir):
-            sys.exit ('Required directory {0} for github repo {1} exists but is not a directory.\n'.format (self._destdir, repo ['name']))
-        print ('Creating GitFetcher for {0} in {1}\n'.format (repo ['git_url'], self._destdir))
-        return GitFetcher (repo ['git_url'], self._destdir)
+            sys.exit('Github repo has no git_url?')
+        if not os.path.lexists(self._destdir):
+            os.makedirs(self._destdir)
+        elif not os.path.isdir(self._destdir):
+            sys.exit('Required directory {0} for github repo {1} exists but is not a directory.\n'.format(self._destdir, repo['name']))
+        print('Creating GitFetcher for {0} in {1}\n'.format(repo['git_url'], self._destdir))
+        return GitFetcher(repo['git_url'], self._destdir)
 
 # get application config values
-config = ConfigParser ()
-config.read ('@CONFFILE@')
-logdir = config.get ('DEFAULT', 'logdir')
-logfile = config.get ('DEFAULT', 'logfile')
+config = ConfigParser()
+config.read('@CONFFILE@')
+logdir = config.get('DEFAULT', 'logdir')
+logfile = config.get('DEFAULT', 'logfile')
 # conservative default polling interval
 poll_interval_default = 1200
 
@@ -174,40 +173,40 @@ application = service.Application('twobit Git Poller')
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 # Iterate over repos from config file
-for section in config.sections ():
+for section in config.sections():
     # Get config values, use defaults if necessary.
-    config_dict = dict (config.items (section))
+    config_dict = dict(config.items(section))
     if 'poll-interval' in config_dict:
-        poll_interval = float (eval (config_dict ['poll-interval']))
+        poll_interval = float(eval(config_dict['poll-interval']))
     else:
         poll_interval = poll_interval_default
     if not 'basedir' in config_dict:
-        sys.exit ('Required config item missing from org: basedir\n')
-    basedir = config_dict ['basedir']
+        sys.exit('Required config item missing from org: basedir\n')
+    basedir = config_dict['basedir']
     if 'subdir' in config_dict:
-        destdir = basedir + '/' + config_dict ['subdir']
+        destdir = basedir + '/' + config_dict['subdir']
     else:
         destdir = basedir
 
     # Create objects to fetch git stuff specific to 'type' from config.
-    type = config.get (section, 'type')
+    type = config.get(section, 'type')
     if type == 'git':
         if not 'url' in config_dict:
-            sys.exit ('Required section missing from git section: url\n')
-        fetcher = GitFetcher (repo_url = config_dict ['url'],
-                              basedir = destdir)
+            sys.exit('Required section missing from git section: url\n')
+        fetcher = GitFetcher(repo_url = config_dict['url'],
+                             basedir = destdir)
     elif type == 'org':
         # sanity check GitHub org config
         if not 'name' in config_dict:
-            sys.exit ('Required section missing from org: name\n')
+            sys.exit('Required section missing from org: name\n')
         # make the fetcher
-        fetcher = GitHubOrgFetcher (application = application,
-                                    orgname = config_dict ['name'],
-                                    destdir = destdir,
-                                    poll_interval = poll_interval)
+        fetcher = GitHubOrgFetcher(application = application,
+                                   orgname = config_dict ['name'],
+                                   destdir = destdir,
+                                   poll_interval = poll_interval)
     else:
-        raise NotImplementedError ('Config section type {0} is not implemented.\n'.format (type))
-    loopreact = internet.TimerService (step=poll_interval,
-                                       callable=fetcher.poll)
-    loopreact.setServiceParent (application)
+        raise NotImplementedError('Config section type {0} is not implemented.\n'.format(type))
+    loopreact = internet.TimerService(step=poll_interval,
+                                      callable=fetcher.poll)
+    loopreact.setServiceParent(application)
 
