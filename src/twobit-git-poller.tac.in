@@ -56,26 +56,32 @@ class GitFetcher(object):
         the repository will be polled and updated. If the repo exists
         locally it's fetched, otherwised a bare clone is made.
         """
-        if self.repo_url is not None:
-            print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
-            try:
-                if not os.path.exists(self.repo_path):
-                    os.chdir(self.basedir)
-                    subprocess.check_output(['git', 'clone', '--bare',
-                                            self.repo_url],
-                                            stderr=subprocess.STDOUT)
-                elif os.path.isdir(self.repo_path):
-                    os.chdir(self.repo_path)
-                    subprocess.check_output(['git', 'fetch'],
-                                            stderr=subprocess.STDOUT)
-                    os.chdir(self.basedir)
-                else:
-                    print('{0} exists but is not a directory, bad news'.format(self.repo_path))
-            except subprocess.CalledProcessError, e:
-               print('{0}'.format(e))
-            print('success polling repo: {0}'.format(self.repo_url))
-        else:
-            print('no repo url set, nothing to poll')
+        # sanity check config and directory structure
+        if self.repo_url is None:
+            print ('GitFetcher: no repo url set, nothing to poll.')
+            return
+        if not os.path.lexists (self.basedir):
+            os.mkdir (self.basedir)
+        elif not os.path.isdir (self.basedir):
+            print ('GitFetcher: {0} exists but is not a directory. Aborting'.format (self.basedir))
+
+        print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
+        try:
+            if not os.path.exists(self.repo_path):
+                os.chdir(self.basedir)
+                subprocess.check_output(['git', 'clone', '--bare',
+                                        self.repo_url],
+                                        stderr=subprocess.STDOUT)
+            elif os.path.isdir(self.repo_path):
+                os.chdir(self.repo_path)
+                subprocess.check_output(['git', 'fetch'],
+                                        stderr=subprocess.STDOUT)
+                os.chdir(self.basedir)
+            else:
+               print('{0} exists but is not a directory, bad news'.format(self.repo_path))
+        except subprocess.CalledProcessError, e:
+           print('{0}'.format(e))
+        print('success polling repo: {0}'.format(self.repo_url))
 
 class GitHubOrgFetcher (object):
     """ Fetch and poll all repos from a GitHub org.
@@ -152,24 +158,6 @@ class GitHubOrgFetcher (object):
         logfile.write ('Creating GitFetcher ({0}, {1}\n'.format (repo ['git_url'], self._destdir))
         return GitFetcher (repo ['git_url'], self._destdir)
 
-def fetcher_from_gitrepo (config, section):
-    if not config.has_option (section, 'basedir'):
-        sys.exit ('No "basedir" specified. Unable to checkout repo from section: {0}'.format (section))
-    basedir = config.get (section, 'basedir')
-    if not config.has_option (section, 'url'):
-        sys.exit ('Git repo section {0} missing required option "url"\n'.format (section))
-    url = config.get (section, 'url')
-    logfile.write ('Creating fetcher for git repo named {0} with url {1}\n'.format (section, url))
-    if config.has_option (section, 'subdir'):
-        destdir = basedir + config.get (section, 'subdir')
-    else:
-        destdir = basedir
-    if not os.path.lexists (destdir):
-        os.mkdir (destdir)
-    elif not os.path.isdir (destdir):
-        sys.exit ('Requested directory in section {0} exists but is not a directory.\n'.format (section))
-    return GitFetcher (url, destdir)
-
 # get application config values
 config = ConfigParser ()
 config.read ('@CONFFILE@')
@@ -203,7 +191,10 @@ for section in config.sections ():
     # Create objects to fetch git stuff specific to 'type' from config.
     type = config.get (section, 'type')
     if type == 'git':
-        fetcher = fetcher_from_gitrepo (config, section)
+        if not 'url' in config_dict:
+            sys.exit ('Required section missing from git section: url\n')
+        fetcher = GitFetcher (repo_url = config_dict ['url'],
+                              basedir = destdir)
     elif type == 'org':
         # sanity check GitHub org config
         if not 'name' in config_dict:
