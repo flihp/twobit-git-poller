@@ -69,12 +69,12 @@ class GitFetcher(object):
         try:
             if not os.path.exists(self.repo_path):
                 subprocess.check_output(
-                    ['git', 'clone', '--bare', self.repo_url, self.repo_path],
+                    ['git', 'clone', '--mirror', self.repo_url, self.repo_path],
                     stderr=subprocess.STDOUT
                     )
             elif os.path.isdir(self.repo_path):
                 subprocess.check_output(
-                    ['git', '--git-dir=' + self.repo_path, 'fetch'],
+                    ['git', '--git-dir=' + self.repo_path, 'remote', 'update'],
                     stderr=subprocess.STDOUT
                 )
             else:
