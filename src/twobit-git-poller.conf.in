@@ -5,6 +5,9 @@ logfile = @PACKAGE@.log
 poll-interval = 60*5
 type = git
 
+[aes-pipe]
+url = git://github.com/flihp/aes-pipe.git
+
 [bitbake]
 url = git://github.com/openembedded/bitbake.git
 
