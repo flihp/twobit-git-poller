@@ -65,14 +65,16 @@ class GitFetcher(object):
         elif not os.path.isdir(self.basedir):
             print('GitFetcher: {0} exists but is not a directory. Aborting'.format(self.basedir))
 
-        print('fetching repo {0} from URL {1} into {2}'.format(self.repo_name, self.repo_url, self.repo_path))
+        print('for repo {0} at URL {1}: '.format(self.repo_name, self.repo_url), end='')
         try:
             if not os.path.exists(self.repo_path):
+                print('cloning mirror into {0}'.format(self.repo_path))
                 subprocess.check_output(
                     ['git', 'clone', '--mirror', self.repo_url, self.repo_path],
                     stderr=subprocess.STDOUT
                     )
             elif os.path.isdir(self.repo_path):
+                print('updating existing mirror')
                 subprocess.check_output(
                     ['git', '--git-dir=' + self.repo_path, 'remote', 'update'],
                     stderr=subprocess.STDOUT
