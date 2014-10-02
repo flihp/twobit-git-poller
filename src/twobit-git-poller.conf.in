@@ -7,6 +7,7 @@ type = git
 
 [aes-pipe]
 url = git://github.com/flihp/aes-pipe.git
+hook-script = /usr/share/buildbot/contrib/git_buildbot.py
 
 [bitbake]
 url = git://github.com/openembedded/bitbake.git

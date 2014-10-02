@@ -39,11 +39,12 @@ class GitFetcher(object):
     Give this class a URL for a git repo and it will fetch it for you.
     """
 
-    def __init__(self, repo_url = None, basedir = '/tmp'):
+    def __init__(self, repo_url = None, basedir = '/tmp', hook_script=None):
         self.repo_url = repo_url
         self.basedir = basedir
         self.repo_name = self.repo_url.split('/')[-1]
         self.repo_path = self.basedir + '/' + self.repo_name
+        self.hook_script = hook_script
         # cloning bare repos adds '.git' to end of directory name even if URI
         # doesn't have one
         if self.repo_path[-4:] != '.git':
@@ -64,7 +65,35 @@ class GitFetcher(object):
             os.mkdir(self.basedir)
         elif not os.path.isdir(self.basedir):
             print('GitFetcher: {0} exists but is not a directory. Aborting'.format(self.basedir))
-
+        hook_data = []
+        # Get hook data before remote update
+        if not self.hook_script is None and os.path.isdir(self.repo_path):
+            try:
+                branches = subprocess.check_output(
+                               ['git', '--git-dir=' + self.repo_path,
+                                'branch'],
+                               stderr=subprocess.STDOUT
+                           ).decode('utf-8').replace('*', '')
+            except subprocess.CalledProcessError, e:
+                print(e)
+            # translate branch names to full symbolic name and get hash
+            # of current tip
+            for branch in branches.split():
+                try:
+                    symname = subprocess.check_output(
+                                  ['git', '--git-dir=' + self.repo_path,
+                                   'rev-parse', '--symbolic-full-name',
+                                   branch],
+                                  stderr=subprocess.STDOUT
+                              ).decode('utf-8').rstrip().strip()
+                    pre = subprocess.check_output(
+                              ['git', '--git-dir=' + self.repo_path,
+                               'rev-parse', symname],
+                              stderr=subprocess.STDOUT
+                          ).decode('utf-8').rstrip().strip()
+                    hook_data.append((symname, pre))
+                except subprocess.CalledProcessError, e:
+                    print(e)
         print('for repo {0} at URL {1}: '.format(self.repo_name, self.repo_url), end='')
         try:
             if not os.path.exists(self.repo_path):
@@ -84,6 +113,18 @@ class GitFetcher(object):
             print('success polling repo: {0}'.format(self.repo_url))
         except subprocess.CalledProcessError, e:
            print('{0}'.format(e))
+        if not self.hook_script is None and len(hook_data) > 0:
+            p = subprocess.Popen(self.hook_script, stdin=subprocess.PIPE)
+            for hook_set in hook_data:
+                try:
+                    post = subprocess.check_output(
+                               ['git', '--git-dir=' + self.repo_path,
+                                'rev-parse', hook_set[0]],
+                               stderr=subprocess.STDOUT
+                           ).decode('utf-8').rstrip().strip()
+                    p.stdin.write('{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0]))
+                except subprocess.CalledProcessError, e:
+                    print(e)
 
 class GitHubOrgFetcher(object):
     """ Fetch and poll all repos from a GitHub org.
@@ -189,6 +230,10 @@ for section in config.sections():
         destdir = basedir + '/' + config_dict['subdir']
     else:
         destdir = basedir
+    if 'hook-script' in config_dict:
+        hook_script = config_dict['hook-script']
+    else:
+        hook_script = None
 
     # Create objects to fetch git stuff specific to 'type' from config.
     type = config.get(section, 'type')
@@ -196,6 +241,7 @@ for section in config.sections():
         if not 'url' in config_dict:
             sys.exit('Required section missing from git section: url\n')
         fetcher = GitFetcher(repo_url = config_dict['url'],
+                             hook_script = hook_script,
                              basedir = destdir)
     elif type == 'org':
         # sanity check GitHub org config
