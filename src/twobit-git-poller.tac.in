@@ -50,6 +50,41 @@ class GitFetcher(object):
         if self.repo_path[-4:] != '.git':
             self.repo_path = self.repo_path + '.git'
 
+    def _get_branches(self):
+        """ Get list of strings representing branches for git repo
+        """
+        try:
+            return subprocess.check_output(
+                       ['git', '--git-dir=' + self.repo_path, 'branch']
+                   ).decode('utf-8').replace('*', '').split()
+        except subprocess.CalledProcessError, e:
+            print(e)
+            return []
+
+    def _get_symname(self, branch):
+        """ Translate a branch name to a string holding full symbolic name
+        """
+        try:
+            return subprocess.check_output(
+                       ['git', '--git-dir=' + self.repo_path, 'rev-parse',
+                        '--symbolic-full-name', branch]
+                   ).decode('utf-8').strip()
+        except subprocess.CalledProcessError, e:
+            print(e)
+            return None
+
+    def _get_hash(self, name):
+        """ Get the object hash for named object as string
+        """
+        try:
+            return subprocess.check_output(
+                       ['git', '--git-dir=' + self.repo_path, 'rev-parse',
+                        name]
+                   ).decode('utf-8').strip()
+        except subprocess.CalledProcessError, e:
+            print(e)
+            return None
+
     def poll(self):
         """ Poll a git repo.
         
@@ -68,32 +103,12 @@ class GitFetcher(object):
         hook_data = []
         # Get hook data before remote update
         if not self.hook_script is None and os.path.isdir(self.repo_path):
-            try:
-                branches = subprocess.check_output(
-                               ['git', '--git-dir=' + self.repo_path,
-                                'branch'],
-                               stderr=subprocess.STDOUT
-                           ).decode('utf-8').replace('*', '')
-            except subprocess.CalledProcessError, e:
-                print(e)
-            # translate branch names to full symbolic name and get hash
-            # of current tip
-            for branch in branches.split():
-                try:
-                    symname = subprocess.check_output(
-                                  ['git', '--git-dir=' + self.repo_path,
-                                   'rev-parse', '--symbolic-full-name',
-                                   branch],
-                                  stderr=subprocess.STDOUT
-                              ).decode('utf-8').rstrip().strip()
-                    pre = subprocess.check_output(
-                              ['git', '--git-dir=' + self.repo_path,
-                               'rev-parse', symname],
-                              stderr=subprocess.STDOUT
-                          ).decode('utf-8').rstrip().strip()
-                    hook_data.append((symname, pre))
-                except subprocess.CalledProcessError, e:
-                    print(e)
+            branches = self._get_branches()
+            for branch in branches:
+                # for each branch create tuple of (symname, hash)
+                # & add to list
+                symname = self._get_symname(branch)
+                hook_data.append((symname, self._get_hash(symname)))
         print('for repo {0} at URL {1}: '.format(self.repo_name, self.repo_url), end='')
         try:
             if not os.path.exists(self.repo_path):
@@ -116,15 +131,10 @@ class GitFetcher(object):
         if not self.hook_script is None and len(hook_data) > 0:
             p = subprocess.Popen(self.hook_script, stdin=subprocess.PIPE)
             for hook_set in hook_data:
-                try:
-                    post = subprocess.check_output(
-                               ['git', '--git-dir=' + self.repo_path,
-                                'rev-parse', hook_set[0]],
-                               stderr=subprocess.STDOUT
-                           ).decode('utf-8').rstrip().strip()
-                    p.stdin.write('{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0]))
-                except subprocess.CalledProcessError, e:
-                    print(e)
+                post = self._get_hash(hook_set[0])
+                p.stdin.write(
+                    '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
+                )
 
 class GitHubOrgFetcher(object):
     """ Fetch and poll all repos from a GitHub org.
