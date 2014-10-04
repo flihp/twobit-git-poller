@@ -4,10 +4,16 @@ logdir = @LOGDIR@
 logfile = @PACKAGE@.log
 poll-interval = 60*5
 type = git
+hook-script = /usr/share/buildbot/contrib/git_buildbot.py
+hook-master = localhost
+hook-port = 9989
+hook-user = pbchange
+hook-passwd = p4$$wd
+hook-logfile = /tmp/git_buildbot.log
 
 [aes-pipe]
 url = git://github.com/flihp/aes-pipe.git
-hook-script = /usr/share/buildbot/contrib/git_buildbot.py
+hook-projects = ['aes-pipe']
 
 [bitbake]
 url = git://github.com/openembedded/bitbake.git

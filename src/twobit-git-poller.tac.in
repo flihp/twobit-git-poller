@@ -25,7 +25,7 @@ style configuration file.
 
 from __future__ import print_function
 
-import os, subprocess, sys
+import ast, os, subprocess, sys
 from ConfigParser import ConfigParser
 from json import load
 from twisted.application import service, internet
@@ -33,18 +33,32 @@ from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
 from urllib2 import urlopen, URLError
 
+class BuildbotHook(object):
+    """ BuildbotHook class
+    """
+
+    def __init__(self, script=None, host=None, port=None, user=None,
+                 passwd=None, projects=[], logfile=None):
+        self.script = script
+        self.host = host
+        self.port = port
+        self.user = user
+        self.passwd = passwd
+        self.projects = projects
+        self.logfile = logfile
+
 class GitFetcher(object):
     """ GitFetcher class
     
     Give this class a URL for a git repo and it will fetch it for you.
     """
 
-    def __init__(self, repo_url = None, basedir = '/tmp', hook_script=None):
+    def __init__(self, repo_url = None, basedir = '/tmp', hook=None):
         self.repo_url = repo_url
         self.basedir = basedir
         self.repo_name = self.repo_url.split('/')[-1]
         self.repo_path = self.basedir + '/' + self.repo_name
-        self.hook_script = hook_script
+        self.hook = hook
         # cloning bare repos adds '.git' to end of directory name even if URI
         # doesn't have one
         if self.repo_path[-4:] != '.git':
@@ -101,8 +115,10 @@ class GitFetcher(object):
         elif not os.path.isdir(self.basedir):
             print('GitFetcher: {0} exists but is not a directory. Aborting'.format(self.basedir))
         hook_data = []
-        # Get hook data before remote update
-        if not self.hook_script is None and os.path.isdir(self.repo_path):
+        if (self.hook is not None and 
+            self.hook.script is not None and
+            os.path.isdir(self.repo_path)):
+            # Get hook data before remote update
             branches = self._get_branches()
             for branch in branches:
                 # for each branch create tuple of (symname, hash)
@@ -128,13 +144,30 @@ class GitFetcher(object):
             print('success polling repo: {0}'.format(self.repo_url))
         except subprocess.CalledProcessError, e:
            print('{0}'.format(e))
-        if not self.hook_script is None and len(hook_data) > 0:
-            p = subprocess.Popen(self.hook_script, stdin=subprocess.PIPE)
-            for hook_set in hook_data:
-                post = self._get_hash(hook_set[0])
-                p.stdin.write(
-                    '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
-                )
+        if (self.hook is not None and
+            self.hook.script is not None and
+            len(hook_data) > 0):
+            # Invoke hook script for each project string, can only pass one
+            # at a time (I think).
+            for project in self.hook.projects:
+                p = subprocess.Popen(
+                        [self.hook.script,
+                         '--master={0}:{1}'.format(self.hook.host,
+                                                   self.hook.port),
+                         '--username=' + self.hook.user,
+                         '--auth=' + self.hook.passwd,
+                         '--logfile=' + self.hook.logfile,
+                         '--verbose', '--verbose', '--verbose',
+                         '--project=' + project
+                        ],
+                        env={'GIT_DIR' : self.repo_path},
+                        stdin=subprocess.PIPE
+                    )
+                for hook_set in hook_data:
+                    post = self._get_hash(hook_set[0])
+                    p.stdin.write(
+                        '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
+                    )
 
 class GitHubOrgFetcher(object):
     """ Fetch and poll all repos from a GitHub org.
@@ -240,10 +273,22 @@ for section in config.sections():
         destdir = basedir + '/' + config_dict['subdir']
     else:
         destdir = basedir
-    if 'hook-script' in config_dict:
-        hook_script = config_dict['hook-script']
+    if ('hook-script' in config_dict and 'hook-master' in config_dict and
+        'hook-port' in config_dict and 'hook-user' in config_dict and
+        'hook-passwd' in config_dict and 'hook-projects' in config_dict):
+        # Get hook script data. Assume all data is required until we find
+        # a counter example.
+        bb_hook = BuildbotHook(
+                      script=config_dict['hook-script'],
+                      host=config_dict['hook-master'],
+                      port=config_dict['hook-port'],
+                      user=config_dict['hook-user'],
+                      passwd=config_dict['hook-passwd'],
+                      logfile=config_dict['hook-logfile'],
+                      projects=ast.literal_eval(config_dict['hook-projects'])
+                  )
     else:
-        hook_script = None
+        bb_hook = None
 
     # Create objects to fetch git stuff specific to 'type' from config.
     type = config.get(section, 'type')
@@ -251,7 +296,7 @@ for section in config.sections():
         if not 'url' in config_dict:
             sys.exit('Required section missing from git section: url\n')
         fetcher = GitFetcher(repo_url = config_dict['url'],
-                             hook_script = hook_script,
+                             hook = bb_hook,
                              basedir = destdir)
     elif type == 'org':
         # sanity check GitHub org config
