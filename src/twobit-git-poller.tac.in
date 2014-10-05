@@ -168,6 +168,7 @@ class GitFetcher(object):
                     p.stdin.write(
                         '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
                     )
+                p.stdin.close()
 
 class GitHubOrgFetcher(object):
     """ Fetch and poll all repos from a GitHub org.
