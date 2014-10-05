@@ -17,21 +17,27 @@ hook-projects = ['aes-pipe']
 
 [bitbake]
 url = git://github.com/openembedded/bitbake.git
+hook-projects = ['bitbake']
 
 [meta-measured]
 url = git://github.com/flihp/meta-measured.git
+hook-projects = ['meta-measured']
+
+[oe-build-scripts]
+url = git//github.com/flihp/oe-build-scripts.git
+hook-projects = ['core-image-minimal', 'meta-measured', 'meta-selinux']
 
 [openembedded-core]
 url = git://github.com/openembedded/openembedded-core.git
-
-[meta-openembedded]
-url = git://github.com/openembedded/meta-openembedded.git
+hook-projects = ['openembedded-core']
 
 [meta-intel]
 url = git://git.yoctoproject.org/meta-intel
+hook-projects = ['meta-intel']
 
 [meta-selinux]
 url = git://git.yoctoproject.org/meta-selinux
+hook-projects = ['meta-selinux']
 
 [meta-java]
 url = git://github.com/woglinde/meta-java.git
