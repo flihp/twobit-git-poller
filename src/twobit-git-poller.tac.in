@@ -191,12 +191,13 @@ class GitHubOrgFetcher(object):
     TimeService and hook it up to the supplied application object.
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
-    def __init__(self, application, orgname, destdir, poll_interval=300):
+    def __init__(self, application, orgname, destdir, poll_interval=300, hook=None):
         self._application = application
         self._destdir = destdir
         self._fetchers = {}
         self._orgname = orgname
         self._poll_interval = poll_interval
+        self._hook = hook
         self._url = self._GITHUB_REPO_URL.format(self._orgname)
 
     def poll(self):
@@ -258,7 +259,7 @@ class GitHubOrgFetcher(object):
         elif not os.path.isdir(self._destdir):
             sys.exit('Required directory {0} for github repo {1} exists but is not a directory.\n'.format(self._destdir, repo['name']))
         print('Creating GitFetcher for {0} in {1}\n'.format(repo['git_url'], self._destdir))
-        return GitFetcher(repo['git_url'], self._destdir)
+        return GitFetcher(repo['git_url'], basedir=self._destdir, hook=self._hook)
 
 # get application config values
 config = ConfigParser()
@@ -320,6 +321,7 @@ for section in config.sections():
         fetcher = GitHubOrgFetcher(application = application,
                                    orgname = config_dict ['name'],
                                    destdir = destdir,
+                                   hook = bb_hook,
                                    poll_interval = poll_interval)
     else:
         raise NotImplementedError('Config section type {0} is not implemented.\n'.format(type))

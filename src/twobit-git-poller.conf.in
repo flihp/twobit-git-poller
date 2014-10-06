@@ -46,3 +46,4 @@ url = git://github.com/woglinde/meta-java.git
 type = org
 name = openxt
 subdir = openxt
+hook-projects = ['openxt']
