@@ -7,7 +7,13 @@ tacconfpath = $(tacconfdir)/$(tacconffile)
 tacconf_DATA = $(tacconffile)
 taclogdir = $(localstatedir)/log/@PACKAGE@
 taclibdir = $(localstatedir)/lib/@PACKAGE@
-CLEANFILES = $(tacdata_DATA) $(tacconf_DATA)
+tacfile = $(tacdatadir)/$(tacdata_DATA)
+# this isn't portable
+initdir = $(sysconfdir)/init.d
+init_SCRIPTS = @PACKAGE@.init
+EXTRA_SCRIPTS = @PACKAGE@.init.in
+tacpidfile = $(localstatedir)/run/@PACKAGE@.pid
+CLEANFILES = $(tacdata_DATA) $(tacconf_DATA) $(init_SCRIPTS)
 SUFFIXES = .in
 
 $(tacdata_DATA): $(tacdata_DATA).in Makefile
@@ -19,7 +25,9 @@ $(tacconf_DATA): $(tacconf_DATA).in Makefile
 do_subst = sed -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
                -e 's,[@]CONFFILE[@],$(tacconfpath),g' \
 			   -e 's,[@]LOGDIR[@],$(taclogdir),g' \
-			   -e 's,[@]LIBDIR[@],$(taclibdir),g'
+			   -e 's,[@]LIBDIR[@],$(taclibdir),g' \
+			   -e 's,[@]PIDFILE[@],$(tacpidfile),g' \
+			   -e 's,[@]TACFILE[@],$(tacfile),g'
 
 # There's gotta be an easier way to do this
 install-data-hook: mklogdir mklibdir

@@ -11,5 +11,6 @@ missing
 src/Makefile
 src/Makefile.in
 src/twobit-git-poller.conf
+src/twobit-git-poller.init
 src/twobit-git-poller.tac
 
