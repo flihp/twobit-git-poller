@@ -1,1 +1,11 @@
-Poll git repos periodically.
+This is a mostly simple twisted python daemon that mirrors remote git repos locally.
+On a configurable interval the daemon wakes up and does the standard 'git clone --mirror' if it doesn't yet exist or 'git remote update' if it does.
+Which repos to mirror are specific via a config file written in the format parsed by the Python ConfigParser.
+An example is provided but it should be documented eventually.
+Each config section specifies either a remote git repo to mirror locally or a github organization that can be mirrored in full.
+
+The part of this daemon that's a bit less than simple is the hook function implemented.
+AFAIK there are few client side hooks in a git repo and running 'git remote update' causes none of the existing git hooks to fire.
+As such I implemented a hook that can be configured to run on each call to update the local mirror.
+The hook behaves in the same way as the post-receive hook so that it can be used with the git_buildbot.py script as is.
+
