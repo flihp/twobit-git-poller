@@ -36,7 +36,7 @@ url = git://git.yoctoproject.org/meta-intel
 hook-projects = ['meta-intel']
 
 [meta-selinux]
-url = git://git.yoctoproject.org/meta-selinux
+url = git://github.com/flihp/meta-selinux
 hook-projects = ['meta-selinux']
 
 [meta-virtualization]
