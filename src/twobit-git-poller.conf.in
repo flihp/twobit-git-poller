@@ -39,6 +39,14 @@ hook-projects = ['meta-intel']
 url = git://git.yoctoproject.org/meta-selinux
 hook-projects = ['meta-selinux']
 
+[meta-virtualization]
+url = git://git.yoctoproject.org/meta-virtualization
+hook-projects = ['meta-selinux']
+
+[meta-openembedded]
+url = git://git.openembedded.org/meta-openembedded
+hook-projects = ['meta-selinux']
+
 [meta-java]
 url = git://github.com/woglinde/meta-java.git
 
