@@ -8,6 +8,7 @@ config.status
 configure
 install-sh
 missing
+py-compile
 src/Makefile
 src/Makefile.in
 src/twobit-git-poller.conf

@@ -1,18 +1,19 @@
 # install tac / config files and create necessary directories
 tacdatadir = $(pkgdatadir)
-tacdata_DATA = @PACKAGE@.tac
-tacconfdir = $(sysconfdir)/@PACKAGE@
-tacconffile = @PACKAGE@.conf
+tacdata_DATA = twobit-git-poller.tac
+tacconfdir = $(sysconfdir)/twobit-git-poller
+tacconffile = twobit-git-poller.conf
 tacconfpath = $(tacconfdir)/$(tacconffile)
 tacconf_DATA = $(tacconffile)
-taclogdir = $(localstatedir)/log/@PACKAGE@
-taclibdir = $(localstatedir)/lib/@PACKAGE@
+taclogdir = $(localstatedir)/log/twobit-git-poller
+taclibdir = $(localstatedir)/lib/twobit-git-poller
+tacrundir = $(localstatedir)/run/
 tacfile = $(tacdatadir)/$(tacdata_DATA)
 # this isn't portable
 initdir = $(sysconfdir)/init.d
-init_SCRIPTS = @PACKAGE@.init
-EXTRA_SCRIPTS = @PACKAGE@.init.in
-tacpidfile = $(localstatedir)/run/@PACKAGE@.pid
+init_SCRIPTS = twobit-git-poller.init
+EXTRA_SCRIPTS = twobit-git-poller.init.in
+tacpidfile = $(localstatedir)/run/twobit-git-poller.pid
 CLEANFILES = $(tacdata_DATA) $(tacconf_DATA) $(init_SCRIPTS)
 SUFFIXES = .in
 
@@ -30,8 +31,8 @@ do_subst = sed -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
 			   -e 's,[@]TACFILE[@],$(tacfile),g'
 
 # There's gotta be an easier way to do this
-install-data-hook: mklogdir mklibdir
-uninstall-hook: rmlogdir rmlibdir
+install-data-hook: mklogdir mklibdir mkrundir
+uninstall-hook: rmlogdir rmlibdir rmrundir
 
 mklogdir:
 	mkdir -p $(taclogdir)
@@ -41,4 +42,8 @@ mklibdir:
 	mkdir -p $(taclibdir)
 rmlibdir:
 	@rmdir $(taclibdir)
+mkrundir:
+	mkdir -p $(tacrundir)
+rmrundir:
+	@rmdir $(tacrundir)
 

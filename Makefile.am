@@ -1,2 +1,2 @@
-SUBDIRS = src
+SUBDIRS = src src/twobit_gitpoller
 
