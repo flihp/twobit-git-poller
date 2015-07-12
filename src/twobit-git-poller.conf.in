@@ -24,7 +24,7 @@ url = git://github.com/flihp/meta-measured.git
 hook-projects = ['meta-measured']
 
 [oe-build-scripts]
-url = git//github.com/flihp/oe-build-scripts.git
+url = git://github.com/flihp/oe-build-scripts.git
 hook-projects = ['core-image-minimal', 'meta-measured', 'meta-selinux']
 
 [openembedded-core]
