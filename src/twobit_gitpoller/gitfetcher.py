@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, subprocess
+from twisted.python import log
 
 class GitFetcher(object):
     """ GitFetcher class
@@ -114,27 +115,28 @@ class GitFetcher(object):
             # Invoke hook script for each project string, can only pass one
             # at a time (I think).
             for project in self.hook.projects:
-                p = subprocess.Popen(
-                        [self.hook.script,
-                         '--master={0}:{1}'.format(self.hook.host,
-                                                   self.hook.port),
-                         '--username=' + self.hook.user,
-                         '--auth=' + self.hook.passwd,
-                         '--logfile=' + self.hook.logfile,
-                         '--verbose', '--verbose', '--verbose',
-                         '--project=' + project
-                        ],
-                        env={'GIT_DIR' : self.repo_path},
-                        stdin=subprocess.PIPE
-                    )
-                for hook_set in hook_data:
-                    post = self._get_hash(hook_set[0])
-                    if post is None or not post:
-                        print(' post object hash is None or empty')
-                        break
-                    p.stdin.write(
-                        '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
-                    )
-                p.stdin.close()
-
-
+                try:
+                    p = subprocess.Popen(
+                            [self.hook.script,
+                             '--master={0}:{1}'.format(self.hook.host,
+                                                       self.hook.port),
+                             '--username=' + self.hook.user,
+                             '--auth=' + self.hook.passwd,
+                             '--logfile=' + self.hook.logfile,
+                             '--verbose', '--verbose', '--verbose',
+                             '--project=' + project
+                            ],
+                            env={'GIT_DIR' : self.repo_path},
+                            stdin=subprocess.PIPE
+                        )
+                    for hook_set in hook_data:
+                        post = self._get_hash(hook_set[0])
+                        if post is None or not post:
+                            print(' post object hash is None or empty')
+                            break
+                        p.stdin.write(
+                            '{0} {1} {2}\n'.format(hook_set[1], post, hook_set[0])
+                        )
+                    p.stdin.close()
+                except OSError, e:
+                    log.msg('Failed to execute hook script: {0}'.format(e))
