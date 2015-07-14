@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import os, subprocess
+from json import load
+from twisted.application.internet import TimerService
 from urllib2 import urlopen, URLError
 
 from twobit_gitpoller import GitFetcher
@@ -13,8 +15,8 @@ class GitHubOrgFetcher(object):
     TimeService and hook it up to the supplied application object.
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
-    def __init__(self, application, orgname, destdir, poll_interval=300, hook=None):
-        self._application = application
+    def __init__(self, parent, orgname, destdir, poll_interval=300, hook=None):
+        self._parent = parent
         self._destdir = destdir
         self._fetchers = {}
         self._orgname = orgname
@@ -51,11 +53,12 @@ class GitHubOrgFetcher(object):
                     print('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format(repo['git_url']))
                     fetcher = self._fetcher_from_github(repo)
                     self._fetchers[repo['git_url']] = fetcher
-                    loopreact = internet.TimerService(
+                    loopreact = TimerService(
                         step = self._poll_interval,
                         callable = fetcher.poll
                     )
-                    loopreact.setServiceParent(self._application)
+                    loopreact.setServiceParent(self._parent)
+                    loopreact.startService()
                 else:
                     print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))
 

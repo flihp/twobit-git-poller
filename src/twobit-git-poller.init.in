@@ -12,13 +12,13 @@ LOG=@LOGDIR@/@PACKAGE@.log
 NAME=@PACKAGE@
 PID=@PIDFILE@
 SERVER=$(which twistd)
-TAC=@TACFILE@
+TAC=@PACKAGE@
 
 case "$1" in
     start)
         logger "${NAME}: starting"
         echo "Starting ${NAME} ..."
-        twistd --umask=0022 -y "${TAC}" -l "${LOG}" --pidfile "${PID}"
+        twistd --umask=0022 -l "${LOG}" --pidfile "${PID}" twobit_gitpoller --config=@CONFFILE@
         ;;
     stop)
         logger "${NAME}: stopping"

@@ -1,2 +1,2 @@
-SUBDIRS = src src/twobit_gitpoller
+SUBDIRS = src src/twobit_gitpoller src/twisted/plugins
 
