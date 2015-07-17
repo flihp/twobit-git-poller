@@ -8,7 +8,7 @@ from twisted.python import log
 from twobit_gitpoller import BuildbotHook, GitFetcher, GitHubOrgFetcher
 from zope.interface import implements
 
-class TwobitGitPoller(object, MultiService):
+class GitPollerService(object, MultiService):
     implements(IService, IServiceCollection)
     """
     """

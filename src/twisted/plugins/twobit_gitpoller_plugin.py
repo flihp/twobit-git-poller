@@ -37,7 +37,7 @@ from zope.interface import implements
 class GitPollerOptions(Options):
     optParameters = [['config', 'c', 1]]
 
-class TwobitGitPollerServiceMaker(object):
+class GitPollerServiceMaker(object):
     implements(IServiceMaker, IPlugin)
     tapname = "twobit_gitpoller"
     description = "Poll git repos."
@@ -45,8 +45,8 @@ class TwobitGitPollerServiceMaker(object):
 
     def makeService(self, options):
         print('TwobitGitPollerServiceMaker.makeService')
-        poller = twobit_gitpoller.TwobitGitPoller()
+        poller = twobit_gitpoller.GitPollerService()
         poller.add_config(options['config'])
         return poller
 
-plugin = TwobitGitPollerServiceMaker()
+plugin = GitPollerServiceMaker()
