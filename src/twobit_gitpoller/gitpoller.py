@@ -30,7 +30,7 @@ class GitPollerService(object, MultiService):
         # conservative default polling interval
         self._poll_interval_default = 1200
 
-    def startService(self):
+    def load_config(self):
         """ load_config(self):
 
         This needs to be broken down.
@@ -89,7 +89,6 @@ class GitPollerService(object, MultiService):
             else:
                 raise NotImplementedError('Config section type {0} is not implemented.\n'.format(fetch_type))
             log.msg('Creating TimerService for fetcher {0}'.format(type(fetcher).__name__))
-            loopreact = TimerService(step=poll_interval,
-                                     callable=fetcher.poll)
-            loopreact.setServiceParent(self)
-            loopreact.startService()
+            self._timer = TimerService(step=poll_interval,
+                                       callable=fetcher.poll)
+            self._timer.setServiceParent(self)
