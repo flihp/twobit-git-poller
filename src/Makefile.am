@@ -1,16 +1,16 @@
 # install tac / config files and create necessary directories
-tacconfdir = $(sysconfdir)/twobit-git-poller
-tacconffile = twobit-git-poller.conf
+tacconfdir = $(sysconfdir)/twobit-gitpoller
+tacconffile = twobit-gitpoller.conf
 tacconfpath = $(tacconfdir)/$(tacconffile)
 tacconf_DATA = $(tacconffile)
-taclogdir = $(localstatedir)/log/twobit-git-poller
-taclibdir = $(localstatedir)/lib/twobit-git-poller
+taclogdir = $(localstatedir)/log/twobit-gitpoller
+taclibdir = $(localstatedir)/lib/twobit-gitpoller
 tacrundir = $(localstatedir)/run/
 # this isn't portable
 initdir = $(sysconfdir)/init.d
-init_SCRIPTS = twobit-git-poller.init
-EXTRA_SCRIPTS = twobit-git-poller.init.in
-tacpidfile = $(localstatedir)/run/twobit-git-poller.pid
+init_SCRIPTS = twobit-gitpoller.init
+EXTRA_SCRIPTS = twobit-gitpoller.init.in
+tacpidfile = $(localstatedir)/run/twobit-gitpoller.pid
 CLEANFILES = $(tacconf_DATA) $(init_SCRIPTS)
 SUFFIXES = .in
 

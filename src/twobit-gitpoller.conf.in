@@ -2,7 +2,7 @@
 basedir = @LIBDIR@
 logdir = @LOGDIR@
 logfile = @PACKAGE@.log
-poll-interval = 60*5
+poll-interval = 60*1
 type = git
 hook-script = /usr/share/buildbot/contrib/git_buildbot.py
 hook-master = localhost
