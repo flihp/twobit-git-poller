@@ -42,7 +42,7 @@ class GitHubOrgFetcher(object):
             try:
                 github_req = urlopen(nexturl)
             except URLError as err:
-                print('GitHubOrgFetcher: URLError: {0}'.format(err.strerror))
+                print('GitHubOrgFetcher: URLError: {0}'.format(err))
                 break
 
             # Get repos from the JSON body of the request.  If a
