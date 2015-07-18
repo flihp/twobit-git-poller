@@ -58,7 +58,6 @@ class GitHubOrgFetcher(object):
                         callable = fetcher.poll
                     )
                     loopreact.setServiceParent(self._parent)
-                    loopreact.startService()
                 else:
                     print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))
 
