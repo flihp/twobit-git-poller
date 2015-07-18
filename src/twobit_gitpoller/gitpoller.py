@@ -5,7 +5,7 @@ from ConfigParser import ConfigParser
 from twisted.application.internet import TimerService
 from twisted.application.service import IService, IServiceCollection, MultiService
 from twisted.python import log
-from twobit_gitpoller import BuildbotHook, BuildbotHookFactory, GitFetcher, GitHubOrgFetcher
+from twobit_gitpoller import BuildbotHook, BuildbotHookFactory, GitFetcher, GitFetcherService, GitHubOrgFetcher
 from zope.interface import implements
 
 class GitPollerService(object, MultiService):
@@ -73,7 +73,7 @@ class GitPollerService(object, MultiService):
                                            poll_interval = poll_interval)
             else:
                 raise NotImplementedError('Config section type {0} is not implemented.\n'.format(fetch_type))
-            log.msg('Creating TimerService for fetcher {0}'.format(type(fetcher).__name__))
-            self._timer = TimerService(step=poll_interval,
-                                       callable=fetcher.poll)
-            self._timer.setServiceParent(self)
+            log.msg('Creating GitFetcherService for fetcher {0}'.format(type(fetcher).__name__))
+            fetcher_service = GitFetcherService(step=poll_interval)
+            fetcher_service.add_fetcher(fetcher=fetcher)
+            self.addService(fetcher_service)

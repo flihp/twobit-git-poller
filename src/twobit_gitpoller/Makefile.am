@@ -3,6 +3,7 @@ pkgpython_PYTHON = \
     __init__.py \
     buildbot_hook.py \
     gitfetcher.py \
+    gitfetcherservice.py \
     github_orgfetcher.py \
     gitpoller.py
 
