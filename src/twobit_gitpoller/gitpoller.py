@@ -5,16 +5,17 @@ from ConfigParser import ConfigParser
 from twisted.application.internet import TimerService
 from twisted.application.service import IService, IServiceCollection, MultiService
 from twisted.python import log
-from twobit_gitpoller import BuildbotHook, GitFetcher, GitHubOrgFetcher
+from twobit_gitpoller import BuildbotHook, BuildbotHookFactory, GitFetcher, GitHubOrgFetcher
 from zope.interface import implements
 
 class GitPollerService(object, MultiService):
     implements(IService, IServiceCollection)
     """
     """
-    def __init__(self):
+    def __init__(self, hook_factory=BuildbotHookFactory()):
         MultiService.__init__(self)
         print('TwobitGitPoller __init__')
+        self._hook_factory = hook_factory
 
     def add_config(self, conf_file=None):
         log.msg('TwobitGitPoller.add_config')
@@ -51,23 +52,7 @@ class GitPollerService(object, MultiService):
                 destdir = basedir + '/' + config_dict['subdir']
             else:
                 destdir = basedir
-            if ('hook-script' in config_dict and 'hook-master' in config_dict and
-                'hook-port' in config_dict and 'hook-user' in config_dict and
-                'hook-passwd' in config_dict and 'hook-projects' in config_dict):
-                # Get hook script data. Assume all data is required until we find
-                # a counter example.
-                bb_hook = BuildbotHook(
-                              script=config_dict['hook-script'],
-                              host=config_dict['hook-master'],
-                              port=config_dict['hook-port'],
-                              user=config_dict['hook-user'],
-                              passwd=config_dict['hook-passwd'],
-                              logfile=config_dict['hook-logfile'],
-                              projects=ast.literal_eval(config_dict['hook-projects'])
-                          )
-            else:
-                bb_hook = None
-
+            bb_hook = self._hook_factory.make_buildbothook(config_dict)
             # Create objects to fetch git stuff specific to 'type' from config.
             fetch_type = self._config.get(section, 'type')
             if fetch_type == 'git':
