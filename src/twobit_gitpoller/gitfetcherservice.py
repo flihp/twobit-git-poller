@@ -5,21 +5,19 @@ from twisted.application.internet import TimerService
 from twisted.application.service import IService, IServiceCollection, MultiService
 from zope.interface import implements
 
-class GitFetcherService(MultiService):
-    """
-    """
-    implements(IService, IServiceCollection)
+class GitFetcherService(TimerService):
+    """ GitFetcherService
 
-    def __init__(self, step=60*5):
-        MultiService.__init__(self)
-        self._step = step
-
-    def add_fetcher(self, fetcher=None):
+    Simple class that wraps a GitFetcher and the TimerService to poll on a
+    git repo on an interval.
+    """
+    implements(IService)
+    def __init__(self, fetcher=None, step=60*5):
+        """ The magic here is calling the TimerService constructor (old
+            style class) to set the polling interval and specify the polling
+            function.
+        """
         if fetcher is None:
             raise RuntimeError('fetcher cannot be None')
-        if self._fetcher is not None:
-            raise RuntimeError('fetcher already populated')
         self._fetcher = fetcher
-        self._timer = TimerService(step=self._step,
-                                   callable=self._fetcher.poll)
-        self.addService(self)
+        TimerService.__init__(self, step=step, callable=self._fetcher.poll)

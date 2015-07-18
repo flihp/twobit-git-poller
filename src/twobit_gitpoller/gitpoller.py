@@ -74,6 +74,5 @@ class GitPollerService(object, MultiService):
             else:
                 raise NotImplementedError('Config section type {0} is not implemented.\n'.format(fetch_type))
             log.msg('Creating GitFetcherService for fetcher {0}'.format(type(fetcher).__name__))
-            fetcher_service = GitFetcherService(step=poll_interval)
-            fetcher_service.add_fetcher(fetcher=fetcher)
+            fetcher_service = GitFetcherService(fetcher=fetcher, step=poll_interval)
             self.addService(fetcher_service)
