@@ -13,4 +13,4 @@ src/Makefile
 src/Makefile.in
 src/twobit-gitpoller.conf
 src/twobit-gitpoller.init
-
+*pylint.out
