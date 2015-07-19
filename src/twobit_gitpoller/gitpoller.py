@@ -66,11 +66,11 @@ class GitPollerService(object, MultiService):
                 if not 'name' in config_dict:
                     sys.exit('Required section missing from org: name\n')
                 # make the fetcher
-                fetcher = GitHubOrgFetcher(parent = self,
-                                           orgname = config_dict ['name'],
+                fetcher = GitHubOrgFetcher(orgname = config_dict ['name'],
                                            destdir = destdir,
                                            hook = bb_hook,
                                            poll_interval = poll_interval)
+                self.addService(fetcher)
             else:
                 raise NotImplementedError('Config section type {0} is not implemented.\n'.format(fetch_type))
             log.msg('Creating GitFetcherService for fetcher {0}'.format(type(fetcher).__name__))

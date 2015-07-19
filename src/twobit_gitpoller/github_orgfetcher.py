@@ -2,21 +2,22 @@ from __future__ import print_function
 
 import os, subprocess, sys
 from json import load
-from twisted.application.internet import TimerService
+from twisted.application.service import IServiceCollection, MultiService
+from twobit_gitpoller import GitFetcher, GitFetcherService
 from urllib2 import urlopen, URLError
+from zope.interface import implements
 
-from twobit_gitpoller import GitFetcher
-
-class GitHubOrgFetcher(object):
+class GitHubOrgFetcher(MultiService):
     """ Fetch and poll all repos from a GitHub org.
 
     Poll github org finding each repo in the org.  For each repo we
     create a GitFetcher if one doesn't already exit and we create a
     TimeService and hook it up to the supplied application object.
     """
+    implements(IServiceCollection)
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
-    def __init__(self, parent, orgname, destdir, poll_interval=300, hook=None):
-        self._parent = parent
+    def __init__(self, orgname, destdir, poll_interval=300, hook=None):
+        MultiService.__init__(self)
         self._destdir = destdir
         self._fetchers = {}
         self._orgname = orgname
@@ -53,11 +54,9 @@ class GitHubOrgFetcher(object):
                     print('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format(repo['git_url']))
                     fetcher = self._fetcher_from_github(repo)
                     self._fetchers[repo['git_url']] = fetcher
-                    loopreact = TimerService(
-                        step = self._poll_interval,
-                        callable = fetcher.poll
-                    )
-                    loopreact.setServiceParent(self._parent)
+                    service = GitFetcherService(fetcher,
+                                                step=self._poll_interval)
+                    self.addService(service)
                 else:
                     print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))
 
