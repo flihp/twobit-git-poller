@@ -3,11 +3,11 @@ from __future__ import print_function
 import os, subprocess, sys
 from json import load
 from twisted.application.service import IServiceCollection, MultiService
-from twobit_gitpoller import GitFetcher, GitFetcherService
+from twobit_gitpoller import GitFetcher, GitFetcherService, IPoll
 from urllib2 import urlopen, URLError
 from zope.interface import implements
 
-class GitHubOrgFetcher(MultiService):
+class GitHubOrgFetcher(MultiService, IPoll):
     """ Fetch and poll all repos from a GitHub org.
 
     Poll github org finding each repo in the org.  For each repo we

@@ -3,6 +3,7 @@ from __future__ import print_function
 from twisted.python import log
 from twisted.application.internet import TimerService
 from twisted.application.service import IService, IServiceCollection, MultiService
+from twobit_gitpoller import IPoll
 from zope.interface import implements
 
 class GitFetcherService(TimerService):
@@ -19,5 +20,7 @@ class GitFetcherService(TimerService):
         """
         if fetcher is None:
             raise RuntimeError('fetcher cannot be None')
+        if not issubclass(type(fetcher), IPoll):
+            raise TypeError('fetcher provided is not a subclass of IPoll');
         self._fetcher = fetcher
         TimerService.__init__(self, step=step, callable=self._fetcher.poll)

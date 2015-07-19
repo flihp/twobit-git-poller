@@ -1,8 +1,9 @@
 from __future__ import print_function
 import os, subprocess
 from twisted.python import log
+from twobit_gitpoller import IPoll
 
-class GitFetcher(object):
+class GitFetcher(IPoll):
     """ GitFetcher class
 
     Give this class a URL for a git repo and it will fetch it for you.
