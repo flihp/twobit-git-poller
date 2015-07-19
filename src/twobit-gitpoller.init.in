@@ -17,13 +17,34 @@ TAC=@PACKAGE@
 case "$1" in
     start)
         logger "${NAME}: starting"
-        echo "Starting ${NAME} ..."
+        echo -n "Starting ${NAME} ... "
         twistd --umask=0022 -l "${LOG}" --pidfile "${PID}" twobit_gitpoller --config=@CONFFILE@
+        if [ $? -eq 0 ]; then
+            echo "success"
+        else
+            echo "failed"
+        fi
         ;;
     stop)
         logger "${NAME}: stopping"
-        echo "Stopping ${NAME} ..."
-        kill `cat ${PID}`
+        echo -n "Stopping ${NAME} ... "
+        if [ -f ${PID} ]; then
+            kill $(cat ${PID}) && echo "success."
+        else
+            echo "nothing to stop."
+        fi
+        ;;
+    status)
+        echo -n "${NAME}: "
+        if [ -f ${PID} ]; then
+            if ps -e | awk '{print $1}' | grep -q $(cat ${PID}); then
+                echo "running"
+            else
+                echo "not running"
+            fi
+        else
+            echo "no pid file, you're on your own."
+        fi
         ;;
     *)
         logger "${NAME}: Invalid usage"
