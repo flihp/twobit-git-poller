@@ -5,6 +5,7 @@ pkgpython_PYTHON = \
     gitfetcher.py \
     github_orgfetcher.py \
     gitpollerservice.py \
+    gitpollerservicefactory.py \
     gitpollermultiservice.py \
     ipoll.py
 

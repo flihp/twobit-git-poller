@@ -3,4 +3,5 @@ from ipoll import IPoll
 from gitfetcher import GitFetcher
 from gitpollerservice import GitPollerService
 from github_orgfetcher import GitHubOrgFetcher
+from gitpollerservicefactory import GitPollerServiceFactory
 from gitpollermultiservice import GitPollerMultiService
