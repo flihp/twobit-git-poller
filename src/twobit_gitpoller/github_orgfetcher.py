@@ -3,7 +3,7 @@ from __future__ import print_function
 import os, subprocess, sys
 from json import load
 from twisted.application.service import IServiceCollection, MultiService
-from twobit_gitpoller import GitFetcher, GitFetcherService, IPoll
+from twobit_gitpoller import GitFetcher, GitPollerService, IPoll
 from urllib2 import urlopen, URLError
 from zope.interface import implements
 
@@ -54,8 +54,8 @@ class GitHubOrgFetcher(MultiService, IPoll):
                     print('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format(repo['git_url']))
                     fetcher = self._fetcher_from_github(repo)
                     self._fetchers[repo['git_url']] = fetcher
-                    service = GitFetcherService(fetcher,
-                                                step=self._poll_interval)
+                    service = GitPollerService(fetcher,
+                                               step=self._poll_interval)
                     self.addService(service)
                 else:
                     print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))

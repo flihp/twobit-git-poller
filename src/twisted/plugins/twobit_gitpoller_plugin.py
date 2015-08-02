@@ -45,7 +45,7 @@ class GitPollerServiceMaker(object):
 
     def makeService(self, options):
         print('TwobitGitPollerServiceMaker.makeService')
-        poller = twobit_gitpoller.GitPollerService()
+        poller = twobit_gitpoller.GitPollerMultiService()
         poller.add_config(options['config'])
         poller.load_config()
         return poller
