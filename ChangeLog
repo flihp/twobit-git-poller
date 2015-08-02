@@ -1,0 +1,4 @@
+2015-07-20 Philip Tricca <flihp@twobit.us>
+* Migrated to twisted plugin system: src/twisted/plugin.
+* Made the majority of code / functionality a python module in the namespace twobit-gitpoller.*
+* Started using the twisted service hierarchy.
