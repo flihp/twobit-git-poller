@@ -5,7 +5,7 @@ pkgpython_PYTHON = \
     gitfetcher.py \
     gitfetcherservice.py \
     github_orgfetcher.py \
-    gitpoller.py \
+    gitpollerservice.py \
     ipoll.py
 
 MOSTLYCLEANFILES = *pyc *pyo
