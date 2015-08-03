@@ -66,7 +66,7 @@ class GitPoller(IPoll):
         locally it's fetched, otherwised a bare clone is made.
         """
         # sanity check config and directory structure
-        print('polling for repo ' + self.repo_name);
+        print('poller {0} polling for repo {1}'.format(id(self), self.repo_name));
         if self.repo_url is None:
             print('GitPoller: no repo url set, nothing to poll.')
             return
@@ -107,7 +107,7 @@ class GitPoller(IPoll):
                 )
             else:
                print('{0} exists but is not a directory, bad news'.format(self.repo_path))
-            print('success polling repo: {0}'.format(self.repo_url))
+            print('success polling repo: {0} by object {1}'.format(self.repo_url, id(self)))
         except subprocess.CalledProcessError, e:
            print('{0}'.format(e))
         if (self.hook is not None and
