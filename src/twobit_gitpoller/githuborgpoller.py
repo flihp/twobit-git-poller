@@ -19,7 +19,6 @@ class GitHubOrgPoller(MultiService, IPoll):
     def __init__(self, orgname, destdir, poll_interval=300, hook=None):
         MultiService.__init__(self)
         self._destdir = destdir
-        self._pollers = {}
         self._orgname = orgname
         self._poll_interval = poll_interval
         self._hook = hook
@@ -50,15 +49,18 @@ class GitHubOrgPoller(MultiService, IPoll):
             # GitPoller for this repo doesn't already exist create
             # one.
             for repo in load(github_req):
-                if not repo['git_url'] in self._pollers:
-                    print('GitHubOrgPoller: Creating poller for repo: {0}'.format(repo['git_url']))
-                    poller = self._poller_from_github(repo)
-                    self._pollers[repo['git_url']] = poller
-                    service = GitPollerService(poller,
-                                               step=self._poll_interval)
-                    self.addService(service)
-                else:
+                print('GitHubOrgPoller: Creating poller for repo: {0}'.format(repo['git_url']))
+                try:
+                    self.getServiceNamed(repo['git_url'])
                     print('GitHubOrgPoller: poller for repo {0} already exists'.format(repo['git_url']))
+                    continue
+                except KeyError as e:
+                    # noop if we need to create a new service
+                    pass
+                poller = self._poller_from_github(repo)
+                service = GitPollerService(poller, step=self._poll_interval)
+                service.setName(repo['git_url'])
+                service.setServiceParent(self)
 
             # Find the 'next' link from the link header (if it exists).
             # If no 'next' link exists we're at the end of the Org's
