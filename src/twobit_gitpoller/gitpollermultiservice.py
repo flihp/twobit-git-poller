@@ -5,7 +5,7 @@ from ConfigParser import ConfigParser
 from twisted.application.internet import TimerService
 from twisted.application.service import IService, IServiceCollection, MultiService
 from twisted.python import log
-from twobit_gitpoller import GitFetcher, GitHubOrgFetcher, GitPollerService, GitPollerServiceFactory
+from twobit_gitpoller import GitPoller, GitHubOrgFetcher, GitPollerService, GitPollerServiceFactory
 from zope.interface import implements
 
 class GitPollerMultiService(object, MultiService):

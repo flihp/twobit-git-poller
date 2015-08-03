@@ -1,5 +1,5 @@
 from twisted.python import log
-from twobit_gitpoller import BuildbotHookFactory, GitFetcher, GitHubOrgFetcher, GitPollerService
+from twobit_gitpoller import BuildbotHookFactory, GitPoller, GitHubOrgFetcher, GitPollerService
 
 class GitPollerServiceFactory(object):
     """
@@ -28,9 +28,9 @@ class GitPollerServiceFactory(object):
         if fetch_type == 'git':
             if not 'url' in config_dict:
                sys.exit('Required section missing from git section: url\n')
-            fetcher = GitFetcher(repo_url = config_dict['url'],
-                                 hook = bb_hook,
-                                 basedir = destdir)
+            fetcher = GitPoller(repo_url = config_dict['url'],
+                                hook = bb_hook,
+                                basedir = destdir)
         elif fetch_type == 'org':
             # sanity check GitHub org config
             if not 'name' in config_dict:

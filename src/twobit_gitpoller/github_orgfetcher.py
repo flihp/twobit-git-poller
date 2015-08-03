@@ -3,7 +3,7 @@ from __future__ import print_function
 import os, subprocess, sys
 from json import load
 from twisted.application.service import IServiceCollection, MultiService
-from twobit_gitpoller import GitFetcher, GitPollerService, IPoll
+from twobit_gitpoller import GitPoller, GitPollerService, IPoll
 from urllib2 import urlopen, URLError
 from zope.interface import implements
 
@@ -11,7 +11,7 @@ class GitHubOrgFetcher(MultiService, IPoll):
     """ Fetch and poll all repos from a GitHub org.
 
     Poll github org finding each repo in the org.  For each repo we
-    create a GitFetcher if one doesn't already exit and we create a
+    create a GitPoller if one doesn't already exit and we create a
     TimeService and hook it up to the supplied application object.
     """
     implements(IServiceCollection)
@@ -19,7 +19,7 @@ class GitHubOrgFetcher(MultiService, IPoll):
     def __init__(self, orgname, destdir, poll_interval=300, hook=None):
         MultiService.__init__(self)
         self._destdir = destdir
-        self._fetchers = {}
+        self._pollers = {}
         self._orgname = orgname
         self._poll_interval = poll_interval
         self._hook = hook
@@ -30,10 +30,10 @@ class GitHubOrgFetcher(MultiService, IPoll):
 
         This function operates on data from the constructior.  First
         data about each repo from the specified GitHub org is retrieved
-        via the GitHub API. Then a GitFetcher is created for each repo.
+        via the GitHub API. Then a GitPoller is created for each repo.
         A twisted TimeService with the appropriate poll interval is
         then created for each repo from the org.  Upon subsequent
-        invocations new GitFetchers are created for new repos.
+        invocations new GitPollers are created for new repos.
 
         See: https://developer.github.com/v3/repos/
         """
@@ -47,18 +47,18 @@ class GitHubOrgFetcher(MultiService, IPoll):
                 break
 
             # Get repos from the JSON body of the request.  If a
-            # GitFetcher for this repo doesn't already exist create
+            # GitPoller for this repo doesn't already exist create
             # one.
             for repo in load(github_req):
-                if not repo['git_url'] in self._fetchers:
-                    print('GitHubOrgFetcher: Creating fetcher for repo: {0}'.format(repo['git_url']))
-                    fetcher = self._fetcher_from_github(repo)
-                    self._fetchers[repo['git_url']] = fetcher
-                    service = GitPollerService(fetcher,
+                if not repo['git_url'] in self._pollers:
+                    print('GitHubOrgFetcher: Creating poller for repo: {0}'.format(repo['git_url']))
+                    poller = self._poller_from_github(repo)
+                    self._pollers[repo['git_url']] = poller
+                    service = GitPollerService(poller,
                                                step=self._poll_interval)
                     self.addService(service)
                 else:
-                    print('GitHubOrgFetcher: fetcher for repo {0} already exists'.format(repo['git_url']))
+                    print('GitHubOrgFetcher: poller for repo {0} already exists'.format(repo['git_url']))
 
             # Find the 'next' link from the link header (if it exists).
             # If no 'next' link exists we're at the end of the Org's
@@ -72,8 +72,8 @@ class GitHubOrgFetcher(MultiService, IPoll):
                 else:
                     nexturl = ''
 
-    def _fetcher_from_github(self, repo):
-        """ Create GitFetcher from GitHub repo dictionary.
+    def _poller_from_github(self, repo):
+        """ Create GitPoller from GitHub repo dictionary.
         """
         if not 'git_url' in repo:
             sys.exit('Github repo has no git_url?')
@@ -81,6 +81,6 @@ class GitHubOrgFetcher(MultiService, IPoll):
             os.makedirs(self._destdir)
         elif not os.path.isdir(self._destdir):
             sys.exit('Required directory {0} for github repo {1} exists but is not a directory.\n'.format(self._destdir, repo['name']))
-        print('Creating GitFetcher for {0} in {1}\n'.format(repo['git_url'], self._destdir))
-        return GitFetcher(repo['git_url'], basedir=self._destdir, hook=self._hook)
+        print('Creating GitPoller for {0} in {1}\n'.format(repo['git_url'], self._destdir))
+        return GitPoller(repo['git_url'], basedir=self._destdir, hook=self._hook)
 

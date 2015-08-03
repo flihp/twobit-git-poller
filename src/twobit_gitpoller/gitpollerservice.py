@@ -7,7 +7,7 @@ from twobit_gitpoller import IPoll
 class GitPollerService(TimerService):
     """ Periodically call the poll method of an IPoll object.
 
-    Simple class that wraps a GitFetcher and the TimerService to poll on a
+    Simple class that wraps a GitPoller and the TimerService to poll on a
     git repo on an interval.
     """
     implements(IService)

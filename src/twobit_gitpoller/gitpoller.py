@@ -3,8 +3,8 @@ import os, subprocess
 from twisted.python import log
 from twobit_gitpoller import IPoll
 
-class GitFetcher(IPoll):
-    """ GitFetcher class
+class GitPoller(IPoll):
+    """ GitPoller class
 
     Give this class a URL for a git repo and it will fetch it for you.
     """
@@ -68,12 +68,12 @@ class GitFetcher(IPoll):
         # sanity check config and directory structure
         print('polling for repo ' + self.repo_name);
         if self.repo_url is None:
-            print('GitFetcher: no repo url set, nothing to poll.')
+            print('GitPoller: no repo url set, nothing to poll.')
             return
         if not os.path.lexists(self.basedir):
             os.mkdir(self.basedir)
         elif not os.path.isdir(self.basedir):
-            print('GitFetcher: {0} exists but is not a directory. Aborting'.format(self.basedir))
+            print('GitPoller: {0} exists but is not a directory. Aborting'.format(self.basedir))
         hook_data = []
         if (self.hook is not None and
             self.hook.script is not None and
