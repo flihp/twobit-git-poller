@@ -2,6 +2,6 @@ from buildbot_hook import BuildbotHook, BuildbotHookFactory
 from ipoll import IPoll
 from gitpoller import GitPoller
 from gitpollerservice import GitPollerService
-from github_orgpoller import GitHubOrgPoller
+from githuborgpoller import GitHubOrgPoller
 from gitpollerservicefactory import GitPollerServiceFactory
 from gitpollermultiservice import GitPollerMultiService

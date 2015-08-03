@@ -3,7 +3,7 @@ pkgpython_PYTHON = \
     __init__.py \
     buildbot_hook.py \
     gitpoller.py \
-    github_orgpoller.py \
+    githuborgpoller.py \
     gitpollerservice.py \
     gitpollerservicefactory.py \
     gitpollermultiservice.py \
