@@ -7,7 +7,7 @@ from twobit_gitpoller import GitPoller, GitPollerService, IPoll
 from urllib2 import urlopen, URLError
 from zope.interface import implements
 
-class GitHubOrgFetcher(MultiService, IPoll):
+class GitHubOrgPoller(MultiService, IPoll):
     """ Fetch and poll all repos from a GitHub org.
 
     Poll github org finding each repo in the org.  For each repo we
@@ -39,11 +39,11 @@ class GitHubOrgFetcher(MultiService, IPoll):
         """
         nexturl = self._url
         while nexturl != '':
-            print('GitHubOrgFetcher: opening URL: {0}'.format(nexturl))
+            print('GitHubOrgPoller: opening URL: {0}'.format(nexturl))
             try:
                 github_req = urlopen(nexturl)
             except URLError as err:
-                print('GitHubOrgFetcher: URLError: {0}'.format(err))
+                print('GitHubOrgPoller: URLError: {0}'.format(err))
                 break
 
             # Get repos from the JSON body of the request.  If a
@@ -51,14 +51,14 @@ class GitHubOrgFetcher(MultiService, IPoll):
             # one.
             for repo in load(github_req):
                 if not repo['git_url'] in self._pollers:
-                    print('GitHubOrgFetcher: Creating poller for repo: {0}'.format(repo['git_url']))
+                    print('GitHubOrgPoller: Creating poller for repo: {0}'.format(repo['git_url']))
                     poller = self._poller_from_github(repo)
                     self._pollers[repo['git_url']] = poller
                     service = GitPollerService(poller,
                                                step=self._poll_interval)
                     self.addService(service)
                 else:
-                    print('GitHubOrgFetcher: poller for repo {0} already exists'.format(repo['git_url']))
+                    print('GitHubOrgPoller: poller for repo {0} already exists'.format(repo['git_url']))
 
             # Find the 'next' link from the link header (if it exists).
             # If no 'next' link exists we're at the end of the Org's

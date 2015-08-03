@@ -1,5 +1,5 @@
 from twisted.python import log
-from twobit_gitpoller import BuildbotHookFactory, GitPoller, GitHubOrgFetcher, GitPollerService
+from twobit_gitpoller import BuildbotHookFactory, GitPoller, GitHubOrgPoller, GitPollerService
 
 class GitPollerServiceFactory(object):
     """
@@ -23,27 +23,25 @@ class GitPollerServiceFactory(object):
         else:
             destdir = basedir
         bb_hook = self._hook_factory.make_buildbothook(config_dict)
-        # Create objects to fetch git stuff specific to 'type' from config.
-        fetch_type = config_dict['type']
-        if fetch_type == 'git':
+        # Create objects to poll git stuff specific to 'type' from config.
+        poller_type = config_dict['type']
+        if poller_type == 'git':
             if not 'url' in config_dict:
                sys.exit('Required section missing from git section: url\n')
-            fetcher = GitPoller(repo_url = config_dict['url'],
-                                hook = bb_hook,
-                                basedir = destdir)
-        elif fetch_type == 'org':
+            poller = GitPoller(repo_url = config_dict['url'],
+                               hook = bb_hook,
+                               basedir = destdir)
+        elif poller_type == 'org':
             # sanity check GitHub org config
             if not 'name' in config_dict:
                 sys.exit('Required section missing from org: name\n')
-            # make the fetcher
-            fetcher = GitHubOrgFetcher(orgname = config_dict ['name'],
-                                       destdir = destdir,
-                                       hook = bb_hook,
-                                       poll_interval = poll_interval)
-            _services.append(fetcher)
+            poller = GitHubOrgPoller(orgname = config_dict ['name'],
+                                     destdir = destdir,
+                                     hook = bb_hook,
+                                     poll_interval = poll_interval)
+            _services.append(poller)
         else:
-            raise NotImplementedError('Config section type {0} is not implemented.\n'.format(fetch_type))
-        log.msg('Creating GitPollerService for fetcher {0}'.format(type(fetcher).__name__))
-        fetcher_service = GitPollerService(poller=fetcher, step=poll_interval)
-        _services.append(fetcher_service)
+            raise NotImplementedError('Config section type {0} is not implemented.\n'.format(poller_type))
+        log.msg('Creating GitPollerService for poller {0}'.format(type(poller).__name__))
+        _services.append(GitPollerService(poller=poller, step=poll_interval))
         return _services
