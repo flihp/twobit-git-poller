@@ -29,8 +29,8 @@ class GitPoller(IPoll):
             cmd = ['git', '--git-dir={0}'.format(self.repo_path), 'branch']
             log.info('executing cmd: {0}'.format(cmd))
             return subprocess.check_output(cmd).decode('utf-8').replace('*', '').split()
-        except subprocess.CalledProcessError, e:
-            log.critical(e)
+        except subprocess.CalledProcessError as excep:
+            log.critical(excep)
             return []
 
     def _get_symname(self, branch):
@@ -41,8 +41,8 @@ class GitPoller(IPoll):
                    '--symbolic-full-name={0}'.format(branch)]
             log.info('executing cmd: {0}'.format(cmd))
             return subprocess.check_output(cmd).decode('utf-8').strip()
-        except subprocess.CalledProcessError, e:
-            log.critical(e)
+        except subprocess.CalledProcessError as excep:
+            log.critical(excep)
             return None
 
     def _get_hash(self, name):
@@ -52,8 +52,8 @@ class GitPoller(IPoll):
             cmd = ['git', '--git-dir={0}'.format(self.repo_path), 'rev-parse', name]
             log.info('executing cmd: {0}'.format(cmd))
             return subprocess.check_output(cmd).decode('utf-8').strip()
-        except subprocess.CalledProcessError, e:
-            log.critical(e)
+        except subprocess.CalledProcessError as excep:
+            log.critical(excep)
             return None
 
     def poll(self):
@@ -112,8 +112,8 @@ class GitPoller(IPoll):
                          .format(self.repo_path))
             log.debug('success polling repo: {0} by object {1}'
                       .format(self.repo_url, id(self)))
-        except subprocess.CalledProcessError, e:
-           log.critical(e)
+        except subprocess.CalledProcessError as excep:
+           log.critical(excep)
         if (self.hook is not None and
             self.hook.script is not None and
             len(hook_data) > 0):
@@ -141,5 +141,6 @@ class GitPoller(IPoll):
                         p.stdin.write('{0} {1} {2}\n'
                                       .format(hook_set[1], post, hook_set[0]))
                     p.stdin.close()
-                except OSError, e:
-                    log.error('Failed to execute hook script: {0}'.format(e))
+                except OSError as excep:
+                    log.error('Failed to execute hook script: {0}'
+                              .format(excep))
