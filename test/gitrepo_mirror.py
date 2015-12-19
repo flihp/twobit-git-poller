@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser
+import logging as log
+import os, sys
+
+from twobit.gitutil import GitMirror
+
+def main():
+    """ Test case to exercise the GitPoller.
+    """
+
+    description = "Program to poll a git repo using the twobit_gitpoller." \
+                  "GitPoller object."
+    parser = ArgumentParser(prog=__file__, description=description)
+    parser.add_argument('-r', '--remote', default='remote_repo.git',
+                        help="URL of repo to clone")
+    parser.add_argument('-c', '--mirror', default='repo_mirror.git',
+                        help="directory to hold clone of remote")
+    parser.add_argument('-l', '--log-level', default='WARNING',
+                        help="set log level")
+    args = parser.parse_args()
+
+    numeric_level = getattr(log, args.log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError("Invalid log level: {0}".format(args.log_level))
+    log.basicConfig(level=numeric_level)  
+
+    repo = GitRepo(remote=args.remote, mirror=args.mirror)
+    repo.mirror()
+
+if __name__ == '__main__':
+    main()
