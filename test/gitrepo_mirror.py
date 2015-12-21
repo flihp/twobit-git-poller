@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import logging as log
 import os, sys
 
-from twobit.gitutil import GitMirror
+from twobit.gitutil import GitRepo, GitMirror
 
 def main():
     """ Test case to exercise the GitPoller.
@@ -26,8 +26,9 @@ def main():
         raise ValueError("Invalid log level: {0}".format(args.log_level))
     log.basicConfig(level=numeric_level)  
 
-    repo = GitRepo(remote=args.remote, mirror=args.mirror)
-    repo.mirror()
+    repo = GitRepo(gitdir=args.mirror)
+    mirror = GitMirror(remote=args.remote, repo=repo)
+    mirror.mirror()
 
 if __name__ == '__main__':
     main()
