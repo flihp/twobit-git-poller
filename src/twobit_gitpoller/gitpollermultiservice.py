@@ -18,7 +18,7 @@ class GitPollerMultiService(object, MultiService):
     """
     def __init__(self, service_factory=GitPollerServiceFactory()):
         MultiService.__init__(self)
-        print('TwobitGitPoller __init__')
+        log.msg('TwobitGitPoller __init__')
         self._service_factory = service_factory
 
     def add_config(self, conf_file=None):
