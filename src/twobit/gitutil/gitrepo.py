@@ -54,6 +54,9 @@ class GitMirror(object):
         self._repo = repo
         self._remote = remote
 
+    def get_remote(self):
+        return self._remote
+
     def mirror(self):
         if self._remote is None:
             raise GitError("Mirror called without a repo set")
