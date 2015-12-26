@@ -14,19 +14,33 @@ class GitHubOrg(object):
         self._orgname = orgname
         self._url = self._GITHUB_REPO_URL.format(self._orgname)
 
+    def get_repo_git_urls(self):
+        """ Get URLs for all git repos in an organization.
+
+        Returns an array of URL strings.
+        """
+        log.debug("GitHubOrg.get_repo_urls() called")
+        repo_urls = []
+        for repo in self.get_repos():
+            log.debug("GitHubOrg repo: {0}".format(repo))
+            repo_urls.append(repo['git_url'])
+        return repo_urls
+
     def get_repos(self):
         """ Poll all repos from a GitHub org.
 
         Returns an array of dictionaries representing the repos in the
         GitHub org.
         """
-        repo_urls = []
+        log.debug("GitHubOrg.get_repos() called")
+        org_repos = []
         nexturl = self._url
         while nexturl is not None:
+            log.info("requesting url: {0}".format(nexturl))
             github_req = urlopen(nexturl)
-            for repo in json.load(github_req):
-                log.debug("GitHubOrg repo: {0}".format(repo))
-                repo_urls.append(repo['git_url'])
+            req_data = json.load(github_req)
+            log.debug("appending repo data: {0}".format(req_data))
+            org_repos.extend(req_data)
             headers = github_req.info()
             for link in headers['link'].split(','):
                 link_elements = link.strip().split(';')
@@ -37,4 +51,4 @@ class GitHubOrg(object):
                     break
                 else:
                     nexturl = None
-        return repo_urls
+        return org_repos
