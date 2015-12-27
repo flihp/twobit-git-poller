@@ -6,6 +6,7 @@ AC_CONFIG_SRCDIR([src/twobit-gitpoller.conf.in])
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/twobit_gitpoller/Makefile
+                 src/twobit/buildbotutil/Makefile
                  src/twobit/gitutil/Makefile
                  src/twisted/plugins/Makefile])
 AC_OUTPUT
