@@ -5,7 +5,6 @@ BASE=$(echo "$0" | sed 's&^\(.*\)\.sh&\1&')
 REPO_REMOTE=${BASE}.git
 REPO_MIRROR=${BASE}_mirror.git
 REPO_WORK=${BASE}_work
-BASE_DIR=$(pwd)
 
 repo_init () {
     local REPO_REMOTE=$1
@@ -35,14 +34,13 @@ repo_commit () {
 
 repo_poll () {
     local REPO_REMOTE=$1
-    local BASE_DIR=$2
-    local REPO_MIRROR=$3
+    local REPO_MIRROR=$2
 
     if [ -d ${REPO_MIRROR} ]; then
         echo "REPO_MIRROR: ${REPO_MIRROR} exists!"
     fi
 
-    PYTHONPATH+=../src/ ${BASE}.py --gitdir=${REPO_MIRROR} --basedir=${BASE_DIR} --remote=${REPO_REMOTE} --log-level=DEBUG
+    PYTHONPATH+=../src/ ${BASE}.py --gitdir=${REPO_MIRROR} --remote=${REPO_REMOTE} --log-level=DEBUG
     if [ $? -ne 0 ]; then
         echo "TEST FAILED"
         exit $?
@@ -54,19 +52,19 @@ repo_init ${REPO_REMOTE} ${REPO_WORK}
 
 # poll it: this will clone an empty repo
 echo "Polling ${REPO_REMOTE}: first"
-repo_poll ${REPO_REMOTE} ${BASE_DIR} ${REPO_MIRROR}
+repo_poll ${REPO_REMOTE} ${REPO_MIRROR}
 
 # add a test file & commit
 echo "test0" | { repo_commit ${REPO_WORK} test_file0; }
 # poll again: we should get the new file
 echo "Polling ${REPO_REMOTE}: second"
-repo_poll ${REPO_REMOTE} ${BASE_DIR} ${REPO_MIRROR}
+repo_poll ${REPO_REMOTE} ${REPO_MIRROR}
 
 # add another file & commit
 echo "test1" | { repo_commit ${REPO_WORK} test_file1; }
 # one more time for good measure
 echo "Polling ${REPO_REMOTE}: third"
-repo_poll ${REPO_REMOTE} ${BASE_DIR} ${REPO_MIRROR}
+repo_poll ${REPO_REMOTE} ${REPO_MIRROR}
 
 # if we get this far the test passed
 echo "test passed: cleaning up"

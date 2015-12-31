@@ -10,7 +10,7 @@ class GitPoller(IPoll):
     Give this class a URL for a git repo and it will fetch it for you.
     """
 
-    def __init__(self, basedir='/tmp', mirror=None, repo=None, hook=None):
+    def __init__(self, mirror=None, repo=None, hook=None):
         """ Initialize the GitPoller object.
 
         basedir: The directory under which the gitrepo will be cloned.
@@ -18,13 +18,12 @@ class GitPoller(IPoll):
         repo:    An instance of the twobit.gitutil.GitRepo object.
         hook:    An instance of the twobit_gitpoller.BuildbotHook object.
         """
-        self._basedir = basedir
         self._hook = hook
         self._mirror = mirror
         self._repo = repo
-        self._gitdir = os.path.join(self._basedir, self._repo.get_gitdir())
-        log.debug("GitPoller constructor: basedir={0}, hook={1}, mirror={2}, repo={3}, gitdir={4}"
-                  .format(basedir, id(hook), id(mirror), id(repo), self._gitdir))
+        self._gitdir = self._repo.get_gitdir()
+        log.debug("GitPoller constructor: hook={0}, mirror={1}, repo={2}, gitdir={3}"
+                  .format(id(hook), id(mirror), id(repo), self._gitdir))
 
     def poll(self):
         """ Poll a git repo.
