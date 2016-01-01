@@ -2,6 +2,16 @@ import logging as log
 import os
 from twobit.gitutil import GitRepo, GitMirror, GitPoller
 
+class GitPollerFactoryValueError(ValueError):
+    """ An exception class derived from ValueError.
+    
+    This class is used to report errors and omissions in the values
+    passed to the GitPollerFactory.
+    """
+    def __init__(self, message):
+        super(GitPollerFactoryValueError, self).__init__("Missing "
+            "required value in config dictionary: {0}".format(message))
+
 class GitPollerFactory(object):
     """ A factory that builds GitPoller objects from a Bitbake hook object
         and a configuration dictionary.
@@ -26,9 +36,9 @@ class GitPollerFactory(object):
         if config_dict is None:
             raise ValueError('config_dict cannot be None')
         if not 'basedir' in config_dict:
-            raise ValueError("Required config item missing from org: basedir")
+            raise GitPollerFactoryValueError("basedir")
         if not 'url' in config_dict:
-            raise ValueError("Required section missing from git section: url")
+            raise GitPollerFactoryValueError("url")
         if hook is not None:
             log.info("GitPollerFactory using hook object provided to "
                      "make_poller")
@@ -36,7 +46,7 @@ class GitPollerFactory(object):
         elif self._hook_factory is not None:
             log.info("GitPollerFactory using hook factory provided to "
                      "constructor")
-            use_hook = self._hook_factory(config_dict)
+            use_hook = self._hook_factory.make_buildbothook(config_dict)
         else:
             log.info("GitPollerFactory creating GitPoller with no hook")
             use_hook = None
@@ -50,4 +60,4 @@ class GitPollerFactory(object):
             gitdir = os.path.join(config_dict['basedir'], config_dict['gitdir'])
         repo = GitRepo(gitdir = gitdir)
         mirror = GitMirror(remote = config_dict['url'], repo = repo)
-        return GitPoller(mirror = mirror, repo = repo)
+        return GitPoller(hook = use_hook, mirror = mirror, repo = repo)
