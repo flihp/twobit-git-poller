@@ -1,1 +1,1 @@
-from buildbot_hook import BuildbotHook
+from buildbot_hook import BuildbotHook, BuildbotHookFactory, BuildbotHookFactoryValueError

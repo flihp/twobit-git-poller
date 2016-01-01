@@ -52,26 +52,37 @@ class BuildbotHook(object):
             p.stdin.write('{0} {1} {2}\n'
                           .format(data[1], data[2], data[0]))
 
+class BuildbotHookFactoryValueError(Exception):
+    def __init__(self, message):
+        super(BuildbotHookFactoryValueError, self).__init__("Missing "
+            "require value in config dictionary: {0}".format(message))
+
 class BuildbotHookFactory(object):
     """ BuildbotHookFactory
 
     Create BuildbotHook from config section.
     """
-    @staticmethod
-    def make_buildbothook(config_dict):
-        if ('hook-script' in config_dict and 'hook-master' in config_dict and
-            'hook-port' in config_dict and 'hook-user' in config_dict and
-            'hook-passwd' in config_dict and 'hook-projects' in config_dict):
-            # Get hook script data. Assume all data is required until we find
-            # a counter example.
-            return BuildbotHook(
-                       script=config_dict['hook-script'],
-                       host=config_dict['hook-master'],
-                       port=config_dict['hook-port'],
-                       user=config_dict['hook-user'],
-                       passwd=config_dict['hook-passwd'],
-                       logfile=config_dict['hook-logfile'],
-                       projects=ast.literal_eval(config_dict['hook-projects'])
-                   )
-        else:
-            return None
+    def make_buildbothook(self, config_dict={}):
+        if 'hook-logfile' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-logfile')
+        if 'hook-master' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-master')
+        if 'hook-passwd' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-passwd')
+        if 'hook-port' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-port')
+        if 'hook-projects' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-projects')
+        if 'hook-script' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-script')
+        if 'hook-user' not in config_dict:
+            raise BuildbotHookFactoryValueError('hook-user')
+        # Get hook script data. Assume all data is required until we find
+        # a counter example.
+        return BuildbotHook(script=config_dict['hook-script'],
+                            host=config_dict['hook-master'],
+                            port=config_dict['hook-port'],
+                            user=config_dict['hook-user'],
+                            passwd=config_dict['hook-passwd'],
+                            logfile=config_dict['hook-logfile'],
+                            projects=ast.literal_eval(config_dict['hook-projects']))
