@@ -23,11 +23,15 @@ config_dict = {
     'description' : "Exercise the GitPollerService",
 }
 
-# configure python logging level from config dict
+# convert 'log-level' string from config_dict to numeric value from python
+#   logging
 numeric_level = getattr(plog, config_dict['log-level'], None)
 if not isinstance(numeric_level, int):
     raise ValueError("Invalid log level: {0}".format(config_dict['log-level']))
-plog.basicConfig(level = numeric_level)
+# configure python logging to use the provided log level
+#   and the same log stream as the twisted framework
+stream_handler = plog.StreamHandler(stream = tlog.logfile)
+plog.basicConfig(level = numeric_level, stream = stream_handler.stream)
 
 # build up the poller factory and the poller service
 step = int(config_dict['poll-interval'])
@@ -37,8 +41,3 @@ service = GitPollerService(poller = poller, step = step)
 # set service parent to the magic 'application' variable
 application = Application(config_dict['description'])
 service.setServiceParent(application)
-
-plog.info("Created GitPollerFactory with id: {0}".format(id(factory)))
-plog.info("GitPollerFactory made GitPoller with id: {0}".format(id(poller)))
-plog.info("Created GitPollerService with id: {0}".format(id(service)))
-plog.info("Created Application object with id: {0}".format(id(application)))
