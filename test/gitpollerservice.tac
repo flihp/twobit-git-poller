@@ -8,7 +8,7 @@ from twisted.application.service import Application
 from twisted.python import log as tlog
 
 from twobit.gitutil import GitPollerFactory
-from twobit_gitpoller import GitPollerService
+from twobit.twisted_gitpoller import GitPollerService
 
 """ Test TAC file / program to exercise the GitPollerService
 """

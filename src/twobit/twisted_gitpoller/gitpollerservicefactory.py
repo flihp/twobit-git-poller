@@ -1,7 +1,7 @@
 import logging
 
 from twobit.buildbotutil import BuildbotHookFactory
-from twobit_gitpoller import GitPollerService
+from twobit.twisted_gitpoller import GitPollerService
 
 class GitPollerServiceFactoryValueError(ValueError):
     def __init__(self, message):

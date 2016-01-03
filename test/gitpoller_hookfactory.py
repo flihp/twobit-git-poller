@@ -11,7 +11,7 @@ def main():
     """ Test case to exercise the GitPoller hook script.
     """
 
-    description = "Program to poll a git repo using the twobit_gitpoller." \
+    description = "Program to poll a git repo using the twobit.gitutil." \
                   "GitPoller object and its hook script functionality."
     parser = ArgumentParser(prog=__file__, description=description)
     parser.add_argument('-r', '--remote', default='remote.git',

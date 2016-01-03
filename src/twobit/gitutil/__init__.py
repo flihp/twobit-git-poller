@@ -1,3 +1,4 @@
+from ipoll import IPoll
 from gitrepo import GitRepo, GitMirror, GitError
 from gitpoller import GitPoller
 from gitpollerfactory import GitPollerFactory, GitPollerFactoryValueError

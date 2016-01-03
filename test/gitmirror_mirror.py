@@ -10,8 +10,8 @@ def main():
     """ Test case to exercise the GitPoller.
     """
 
-    description = "Program to poll a git repo using the twobit_gitpoller." \
-                  "GitPoller object."
+    description = "Program to mirror a git repo using the twobit.gitutil." \
+                  "GitMirror object."
     parser = ArgumentParser(prog=__file__, description=description)
     parser.add_argument('-r', '--remote', default='remote_repo.git',
                         help="URL of repo to clone")

@@ -1,7 +1,6 @@
 from __future__ import print_function
 import logging, os, subprocess
-from twobit_gitpoller import IPoll
-from twobit.gitutil import GitMirror, GitRepo
+from twobit.gitutil import GitMirror, GitRepo, IPoll
 
 class GitPoller(IPoll):
     """ GitPoller class
