@@ -1,4 +1,4 @@
-import logging as log
+import logging
 
 class GitHubOrgRepoPoller(object):
     """ A class to poll a GitHub Organization for repositories.
@@ -10,6 +10,7 @@ class GitHubOrgRepoPoller(object):
     repository URL in the GitHub organization.
     """
     def __init__(self, org=None, callback=None):
+        self._log = logging.getLogger(__name__)
         self._org = org
         self._callback = callback
 
@@ -21,6 +22,6 @@ class GitHubOrgRepoPoller(object):
         The URL of the git repository as a string.
         """
         for repo_git_url in self._org.get_repo_git_urls():
-            log.info("Executing callback {0} for URL {1}"
-                     .format(id(self._callback), repo_git_url))
+            self._log.info("Executing callback {0} for URL {1}"
+                           .format(id(self._callback), repo_git_url))
             self._callback(repo_git_url)

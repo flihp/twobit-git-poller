@@ -1,5 +1,4 @@
-import logging as log
-import json
+import json, logging
 from urllib2 import urlopen
 
 class GitHubOrg(object):
@@ -11,6 +10,7 @@ class GitHubOrg(object):
     """
     _GITHUB_REPO_URL = 'https://api.github.com/orgs/{0}/repos'
     def __init__(self, orgname=None):
+        self._log = logging.getLogger(__name__)
         self._orgname = orgname
         self._url = self._GITHUB_REPO_URL.format(self._orgname)
 
@@ -19,10 +19,10 @@ class GitHubOrg(object):
 
         Returns an array of URL strings.
         """
-        log.debug("GitHubOrg.get_repo_urls() called")
+        self._log.debug("GitHubOrg.get_repo_urls() called")
         repo_urls = []
         for repo in self.get_repos():
-            log.debug("GitHubOrg repo: {0}".format(repo))
+            self._log.debug("GitHubOrg repo: {0}".format(repo))
             repo_urls.append(repo['git_url'])
         return repo_urls
 
@@ -32,22 +32,21 @@ class GitHubOrg(object):
         Returns an array of dictionaries representing the repos in the
         GitHub org.
         """
-        log.debug("GitHubOrg.get_repos() called")
+        self._log.debug("GitHubOrg.get_repos() called")
         org_repos = []
         nexturl = self._url
         while nexturl is not None:
-            log.info("requesting url: {0}".format(nexturl))
+            self._log.info("requesting url: {0}".format(nexturl))
             github_req = urlopen(nexturl)
             req_data = json.load(github_req)
-            log.debug("appending repo data: {0}".format(req_data))
+            self._log.debug("appending repo data: {0}".format(req_data))
             org_repos.extend(req_data)
             headers = github_req.info()
             for link in headers['link'].split(','):
                 link_elements = link.strip().split(';')
                 if link_elements[-1].strip() == 'rel="next"':
                     nexturl = link_elements[0].strip(' \t\n\r<>')
-                    log.debug("GitHubOrg nexturl: {0}"
-                              .format(nexturl))
+                    self._log.debug("GitHubOrg nexturl: {0}".format(nexturl))
                     break
                 else:
                     nexturl = None

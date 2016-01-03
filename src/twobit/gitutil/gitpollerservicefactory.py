@@ -1,4 +1,4 @@
-import logging as log
+import logging
 
 from twobit.buildbotutil import BuildbotHookFactory
 from twobit_gitpoller import GitPollerService
@@ -12,6 +12,7 @@ class GitPollerServiceFactory(object):
     """
     """
     def __init__(self, hook_factory=None, poller_factory=None):
+        self._log = logging.getLogger(__name__)
         self._hook_factory = hook_factory
         self._poller_factory = poller_factory
 
@@ -28,6 +29,6 @@ class GitPollerServiceFactory(object):
             hook = None
         poller = self._poller_factory.make_poller(config_dict = config_dict,
                                                   hook = hook)
-        log.info('Creating GitPollerService for poller {0}'
-                 .format(type(poller).__name__))
+        self._log.info('Creating GitPollerService for poller {0}'
+                       .format(type(poller).__name__))
         return GitPollerService(poller = poller, step = step)

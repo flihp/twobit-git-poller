@@ -1,5 +1,4 @@
-import subprocess
-import logging as log
+import logging, subprocess
 
 class GitError(Exception):
     def __init__(self, message):
@@ -9,7 +8,8 @@ class GitRepo(object):
     """ Class wrapping a git repository.
     """
     def __init__(self, gitdir=None):
-        log.debug("GitRepo constructor")
+        self._log = logging.getLogger(__name__)
+        self._log.debug("constructor")
         self._gitdir = gitdir
 
     def get_gitdir(self):
@@ -17,11 +17,11 @@ class GitRepo(object):
 
     def get_branches(self):
         """ Get list of branch names for git repo """
-        log.debug("get_branches")
+        self._log.debug("get_branches")
         if self._gitdir is None:
             raise GitError("gitdir must be set to get branch names")
         cmd = ['git', '--git-dir={0}'.format(self._gitdir), 'branch']
-        log.info("executing cmd: {0}".format(cmd))
+        self._log.info("executing cmd: {0}".format(cmd))
         return subprocess.check_output(cmd).decode('utf-8').replace('*', '').split()
 
     def get_symname(self, branch=None):
@@ -30,15 +30,15 @@ class GitRepo(object):
             raise GitError("branch name must be set to get symname")
         cmd = ['git', '--git-dir={0}'.format(self._gitdir), 'rev-parse',
                '--symbolic-full-name', branch]
-        log.info("executing cmd: {0}".format(cmd))
+        self._log.info("executing cmd: {0}".format(cmd))
         return subprocess.check_output(cmd).decode('utf-8').strip()
 
     def get_hash(self, name):
         """ Get the object hash for a named object
         """
-        log.debug("get_hash")
+        self._log.debug("get_hash")
         cmd = ['git', '--git-dir={0}'.format(self._gitdir), 'rev-parse', name]
-        log.info("executing cmd: {0}".format(cmd))
+        self._log.info("executing cmd: {0}".format(cmd))
         return subprocess.check_output(cmd).decode('utf-8').strip()
 
 class GitMirror(object):
@@ -50,7 +50,8 @@ class GitMirror(object):
         remote: the URL for the remote repo to mirror
         mirror: path to the local mirror
         """
-        log.debug("GitMirror init")
+        self._log = logging.getLogger(__name__)
+        self._log.debug('constructor')
         self._repo = repo
         self._remote = remote
 
@@ -62,10 +63,11 @@ class GitMirror(object):
             raise GitError("Mirror called without a repo set")
         if self._repo is None:
             raise GitError("Mirror called without a GitRepo object set")
-        log.debug("Mirroring {0} at {1}.".format(self._remote, self._repo.get_gitdir()))
+        self._log.debug("Mirroring {0} at {1}."
+                        .format(self._remote, self._repo.get_gitdir()))
         cmd = ['git', 'clone', '--mirror', self._remote,
                self._repo.get_gitdir()]
-        log.info("Executing command: {0}".format(cmd))
+        self._log.info("Executing command: {0}".format(cmd))
         subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
     def update(self):
@@ -73,9 +75,9 @@ class GitMirror(object):
         """
         if self._repo is None:
             raise GitError("Cannot update without a remote to update.")
-        log.debug("Updating an existing mirror {0} from remote {1}."
-                  .format(self._repo.get_gitdir(), self._remote))
+        self._log.debug("Updating an existing mirror {0} from remote {1}."
+                        .format(self._repo.get_gitdir(), self._remote))
         cmd = ['git', '--git-dir={0}'.format(self._repo.get_gitdir()),
                'remote', 'update']
-        log.info("Executing command: {0}".format(cmd))
+        self._log.info("Executing command: {0}".format(cmd))
         subprocess.check_output(cmd, stderr=subprocess.STDOUT)

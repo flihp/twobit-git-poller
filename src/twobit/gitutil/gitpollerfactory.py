@@ -1,5 +1,4 @@
-import logging as log
-import os
+import logging, os
 from twobit.gitutil import GitRepo, GitMirror, GitPoller
 
 class GitPollerFactoryValueError(ValueError):
@@ -22,6 +21,7 @@ class GitPollerFactory(object):
 
         The parameter hook_factory is a factory for creating hook objects.
         """
+        self._log = logging.getLogger(__name__)
         self._hook_factory = hook_factory
 
     def make_poller(self, config_dict=None, hook=None):
@@ -40,15 +40,15 @@ class GitPollerFactory(object):
         if not 'url' in config_dict:
             raise GitPollerFactoryValueError("url")
         if hook is not None:
-            log.info("GitPollerFactory using hook object provided to "
-                     "make_poller")
+            self._log.info("GitPollerFactory using hook object provided to "
+                           "make_poller")
             use_hook = hook
         elif self._hook_factory is not None:
-            log.info("GitPollerFactory using hook factory provided to "
-                     "constructor")
+            self._log.info("GitPollerFactory using hook factory provided to "
+                           "constructor")
             use_hook = self._hook_factory.make_buildbothook(config_dict)
         else:
-            log.info("GitPollerFactory creating GitPoller with no hook")
+            self._log.info("GitPollerFactory creating GitPoller with no hook")
             use_hook = None
         """ build up 
         if gitdir is relative, it's relative to basedir
