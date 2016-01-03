@@ -40,8 +40,7 @@ def main():
                         passwd='test_passwd',
                         projects=['test_project'],
                         logfile='test_logfile.log')
-    poller = GitPoller(basedir=args.basedir,
-                       repo=repo,
+    poller = GitPoller(repo=repo,
                        mirror=mirror,
                        hook=hook)
     poller.poll()
