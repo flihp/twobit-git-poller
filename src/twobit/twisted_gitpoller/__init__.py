@@ -1,2 +1,3 @@
 from gitpollerservice import GitPollerService
 from gitpollerservicefactory import GitPollerServiceFactory, GitPollerServiceFactoryValueError
+from pollermultiservice import PollerMultiService, PollerMultiServiceFactory
