@@ -8,7 +8,20 @@ from twobit.gitutil import GitPollerFactory
 from twobit.twisted_gitpoller import PollerMultiServiceFactory
 
 def main():
-    """ Test case to exercise the PollerMultiServiceFactory
+    """ Exercise the PollerMultiServiceFactory.startService function.
+
+    This is an attepmt to do, presumably what twistd does internally:
+    create an instace of the ServiceMaker it's told to:
+        PollerMultiServiceFactory
+    call it's 'makeService' function passing it the data it expects:
+        a config dictionary
+    call its startService function
+    We do nothing here to tie the service produced into a 'main loop' to
+    simulate the twisted main loop. Here the classes that are created to
+    poll stuff are based on the TimerService which happens to trigger
+    when startService is called. It will trigger again at the configured
+    step but this requires a main loop so we only see one event for each
+    poller.
     """
     description = "Program to poll multiple git repositories by way of " \
                   "the PollerMultiServiceFactory."
