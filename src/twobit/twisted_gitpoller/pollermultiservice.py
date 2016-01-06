@@ -24,7 +24,7 @@ class PollerMultiServiceFactory(ServiceMaker):
     GitPollerServiceFactory to create a GitPollerService to poll the
     specified git repo.
     """
-    tapname = "twobit.twisted_gitpoller.PollerMultiServiceFactory"
+    tapname = "twobit_poller"
     description = "Poll stuff."
     options = PollerMultiServiceFactoryOptions
 
