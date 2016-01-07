@@ -25,6 +25,11 @@ class GitPoller(IPoll):
                         "repo={2}, gitdir={3}".format(id(hook), id(mirror),
                                                       id(repo), self._gitdir))
 
+    def get_remote(self):
+        """ Return the URL of the remote that the poller is polling.
+        """
+        return self._mirror.get_remote()
+
     def poll(self):
         """ Poll a git repo.
 
