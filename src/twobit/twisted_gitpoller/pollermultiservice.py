@@ -1,6 +1,8 @@
 from ConfigParser import SafeConfigParser
+import logging
 # from exception import RuntimeError, FileNotFoundError
 from twisted.application.service import ServiceMaker, MultiService
+from twisted.python import log
 from twisted.python.usage import Options
 from twobit.buildbotutil import BuildbotHookFactory
 from twobit.gitutil import GitPollerFactory
@@ -10,6 +12,7 @@ import logging
 
 class PollerMultiServiceFactoryOptions(Options):
     optParameters = [
+        ['log-level', 'l', 'WARNING', 'python logging level'],
         ['config', 'c', 'config.ini',
          "Configuration file describing the configuration of some number of pollers"]
     ]
@@ -32,6 +35,18 @@ class PollerMultiServiceFactory(ServiceMaker):
         self._log = logging.getLogger(__name__)
 
     def makeService(self, options={}):
+        """ Make and configure PollerMultiService
+
+        The configuration of the PollerMultiService is determined by the
+        configuration file specified in the option dictionary under the key
+        'config'.
+        """
+        numeric_level = getattr(logging, options['log-level'].upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError("Invalid log level: {0}".format(config_dict['log-level']))
+        stream_handler = logging.StreamHandler(stream = log.logfile)
+        logging.basicConfig(level = numeric_level, stream = stream_handler.stream)
+
         self._log.debug('make_service')
         config = SafeConfigParser()
         config.read(options['config'])
