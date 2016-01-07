@@ -54,7 +54,7 @@ class GitPoller(IPoll):
             if branch is None or not branch:
                 self._log.warning('branch is None or empty')
                 continue
-            symname = self._repo.get_symname(branch)
+            symname = self._repo.get_symname('heads/' + branch)
             if symname is None or not symname:
                 self._log.warning('symname for branch "{0}" is None or empty'
                                   .format(branch))
