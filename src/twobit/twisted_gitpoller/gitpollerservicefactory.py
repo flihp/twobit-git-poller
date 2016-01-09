@@ -31,4 +31,6 @@ class GitPollerServiceFactory(object):
                                                   hook = hook)
         self._log.info('Creating GitPollerService for poller {0}'
                        .format(type(poller).__name__))
-        return GitPollerService(poller = poller, step = step)
+        service = GitPollerService(poller = poller, step = step)
+        service.setName(poller.get_remote())
+        return service
