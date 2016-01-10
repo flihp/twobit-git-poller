@@ -1,7 +1,7 @@
 import logging
-from twobit.gitutil import GitHubOrg
+from twobit.gitutil import GitHubOrg, IPoll
 
-class GitHubOrgRepoPoller(object):
+class GitHubOrgRepoPoller(IPoll):
     """ A class to poll a GitHub Organization for repositories.
 
     This class exposes a single method 'poll' that takes a callback
