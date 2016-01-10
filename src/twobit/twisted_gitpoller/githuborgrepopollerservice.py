@@ -40,4 +40,6 @@ class GitHubOrgRepoPollerServiceFactory(object):
                                                   callback = callback)
         self._log.info("Creating GitHubOrgRepoPollerService for "
                        "GitHubOrgRepoPoller: {0}".format(poller))
-        return GitHubOrgRepoPollerService(poller = poller, step = step)
+        service = GitHubOrgRepoPollerService(poller = poller, step = step)
+        service.setName(poller.get_org().get_name())
+        return service
