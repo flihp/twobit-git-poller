@@ -14,6 +14,11 @@ class GitHubOrg(object):
         self._orgname = orgname
         self._url = self._GITHUB_REPO_URL.format(self._orgname)
 
+    def get_name(self):
+        """
+        """
+        return self._orgname
+
     def get_repo_git_urls(self):
         """ Get URLs for all git repos in an organization.
 

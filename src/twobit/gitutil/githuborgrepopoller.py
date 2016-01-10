@@ -15,6 +15,9 @@ class GitHubOrgRepoPoller(IPoll):
         self._org = org
         self._callback = callback
 
+    def get_org(self):
+        return self._org
+
     def poll(self):
         """ Poll a GitHubOrg for repository urls.
 
