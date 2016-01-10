@@ -12,7 +12,8 @@ from twobit.twisted_gitpoller import PollerMultiServiceFactory
 """ Test TAC file / program to exercise the PollerMultiServiceFActory
 """
 config_dict = {
-    'config' : { 'config' : 'pollermultiservice.ini' },
+    'config' : { 'config' : 'pollermultiservice.ini',
+                 'log-level' : 'WARNING' },
     'description' : "test program to test plugging the "
         "PollerMultiServiceFactory into the twisted event loop manually",
     'log_level' : 'DEBUG'
