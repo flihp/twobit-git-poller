@@ -1,4 +1,5 @@
 import logging
+from twobit.gitutil import GitHubOrg
 
 class GitHubOrgRepoPoller(object):
     """ A class to poll a GitHub Organization for repositories.
@@ -24,4 +25,21 @@ class GitHubOrgRepoPoller(object):
         for repo_git_url in self._org.get_repo_git_urls():
             self._log.info("Executing callback {0} for URL {1}"
                            .format(id(self._callback), repo_git_url))
-            self._callback(repo_git_url)
+            self._callback(remote = repo_git_url, org = self._org)
+
+class GitHubOrgRepoPollerFactory(object):
+    """ Factory to create GitHubOrgRepoPollers from a configuration dictionary.
+    """
+    def __init__(self, org_factory=None):
+        self._log = logging.getLogger(__name__)
+        self._org_factory = org_factory
+
+    def make_poller(self, config_dict={}, callback=None):
+        """ Create a GitHubOrgPoller from the provided configuration dictionary.
+        """
+        if config_dict is None:
+            raise ValueError("config_dict cannot be None")
+        if not 'name' in config_dict:
+            raise ValueError("config_dict must have 'name'.")
+        org = GitHubOrg(config_dict['name'])
+        return GitHubOrgRepoPoller(org = org, callback = callback)
