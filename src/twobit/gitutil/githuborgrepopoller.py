@@ -30,9 +30,8 @@ class GitHubOrgRepoPoller(IPoll):
 class GitHubOrgRepoPollerFactory(object):
     """ Factory to create GitHubOrgRepoPollers from a configuration dictionary.
     """
-    def __init__(self, org_factory=None):
+    def __init__(self):
         self._log = logging.getLogger(__name__)
-        self._org_factory = org_factory
 
     def make_poller(self, config_dict={}, callback=None):
         """ Create a GitHubOrgPoller from the provided configuration dictionary.
