@@ -33,11 +33,14 @@ if not isinstance(numeric_level, int):
 stream_handler = plog.StreamHandler(stream = tlog.logfile)
 plog.basicConfig(level = numeric_level, stream = stream_handler.stream)
 
+log = plog.getLogger(__name__)
+
 # build up the poller factory and the poller service
 step = int(config_dict['poll-interval'])
 factory = GitPollerFactory()
 poller = factory.make_poller(config_dict = config_dict)
 service = GitPollerService(poller = poller, step = step)
+service.setName(poller.get_remote())
 # set service parent to the magic 'application' variable
 application = Application(config_dict['description'])
 service.setServiceParent(application)
