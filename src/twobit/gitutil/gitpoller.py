@@ -30,6 +30,27 @@ class GitPoller(IPoll):
         """
         return self._mirror.get_remote()
 
+    def _get_branch_hash_tuples(self, branches):
+        """ Get a list of (symbolic full name, hash) tuples from branch names.
+        """
+        tuples=[]
+        for branch in branches:
+            # for each branch create tuple of (symname, hash)
+            # & add to list
+            if branch is None or not branch:
+                self._log.warning('branch is None or empty')
+                continue
+            symname = self._repo.get_symname('heads/' + branch)
+            if symname is None or not symname:
+                self._log.warning('symname for branch "{0}" is None or empty'
+                                  .format(branch))
+                break
+            sym_hash = self._repo.get_hash(symname)
+            self._log.debug("symname: {0} with hash: {1}"
+                            .format(symname, sym_hash))
+            tuples.append((symname, sym_hash))
+        return tuples
+
     def poll(self):
         """ Poll a git repo.
 
@@ -53,21 +74,10 @@ class GitPoller(IPoll):
             return
         # Get hook data for each branch in the repo before we update the gitdir
         hook_data = []
-        for branch in self._repo.get_branches():
-            # for each branch create tuple of (symname, hash)
-            # & add to list
-            if branch is None or not branch:
-                self._log.warning('branch is None or empty')
-                continue
-            symname = self._repo.get_symname('heads/' + branch)
-            if symname is None or not symname:
-                self._log.warning('symname for branch "{0}" is None or empty'
-                                  .format(branch))
-                break
-            sym_hash = self._repo.get_hash(symname)
-            self._log.debug("symname: {0} with hash: {1}"
-                            .format(symname, sym_hash))
-            hook_data.append((symname, sym_hash))
+        if self._hook is not None:
+            branches = self._repo.get_branches()
+            hook_data = self._get_branch_hash_tuples(branches)
+
         try:
             if os.path.isdir(self._gitdir):
                 self._log.debug('updating existing mirror')
@@ -79,10 +89,10 @@ class GitPoller(IPoll):
                             .format(self._mirror.get_remote(), id(self)))
         except subprocess.CalledProcessError as excep:
            self._log.critical(excep)
-        if self._hook is None:
+        if self._hook is not None:
+            # execute the hook script for each branch
+            for hook_set in hook_data:
+                new_hash = self._repo.get_hash(hook_set[0])
+                self._hook.exec_hook(data=(hook_set[0], hook_set[1], new_hash), gitdir=self._gitdir)
+        else:
             self._log.info("No hook object, skipping")
-            return
-        # execute the hook script for each branch
-        for hook_set in hook_data:
-            new_hash = self._repo.get_hash(hook_set[0])
-            self._hook.exec_hook(data=(hook_set[0], hook_set[1], new_hash), gitdir=self._gitdir)
