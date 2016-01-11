@@ -1,3 +1,4 @@
+from copy import deepcopy
 import logging
 from twobit.gitutil import GitHubOrg, IPoll
 
@@ -10,10 +11,11 @@ class GitHubOrgRepoPoller(IPoll):
     callback function passed to the function will be called for each
     repository URL in the GitHub organization.
     """
-    def __init__(self, org=None, callback=None):
+    def __init__(self, org=None, callback=None, callback_data={}):
         self._log = logging.getLogger(__name__)
         self._org = org
         self._callback = callback
+        self._callback_data = callback_data
 
     def get_org(self):
         return self._org
@@ -28,7 +30,20 @@ class GitHubOrgRepoPoller(IPoll):
         for repo_git_url in self._org.get_repo_git_urls():
             self._log.info("Executing callback {0} for URL {1}"
                            .format(id(self._callback), repo_git_url))
-            self._callback(remote = repo_git_url, org = self._org)
+            # add data about the repo to the data dictionary passed to the
+            # callback
+            if ('url' not in self._callback_data or
+                'gitdir' not in self._callback_data):
+                data = deepcopy(self._callback_data)
+            else:
+                data = self._callback_data
+            if 'url' not in data:
+                data['url'] = repo_git_url
+            if 'gitdir' not in data:
+                data['gitdir'] = repo_git_url.split('/')[-1]
+                if data['gitdir'][-4:] != '.git':
+                    data['gitdir'] = data['gitdir'] + '.git'
+            self._callback(org = self._org, remote = repo_git_url, data = data)
 
 class GitHubOrgRepoPollerFactory(object):
     """ Factory to create GitHubOrgRepoPollers from a configuration dictionary.
@@ -44,4 +59,4 @@ class GitHubOrgRepoPollerFactory(object):
         if not 'name' in config_dict:
             raise ValueError("config_dict must have 'name'.")
         org = GitHubOrg(config_dict['name'])
-        return GitHubOrgRepoPoller(org = org, callback = callback)
+        return GitHubOrgRepoPoller(org = org, callback = callback, callback_data = config_dict)

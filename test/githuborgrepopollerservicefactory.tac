@@ -27,13 +27,13 @@ config_dict = {
     'description' : "Exercise the GitPollerService",
 }
 
-def mycallback(remote=None, org=None):
+def mycallback(remote=None, org=None, data={}):
     """ Invoked for each repo the GitHubOrgRepoPoller finds in the provided
         org.
     """
     log = logging.getLogger(__name__)
-    log.info("callback got remote: {0} from github org: {1}"
-             .format(remote, org._orgname))
+    log.info("callback got remote: {0}\n  from github org: {1}\n  with data"
+             ": {2}".format(remote, org._orgname, data))
 
 # convert 'log-level' string from config_dict to numeric value from python
 #   logging
