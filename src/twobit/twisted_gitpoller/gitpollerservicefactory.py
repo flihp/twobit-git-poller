@@ -17,6 +17,13 @@ class GitPollerServiceFactory(object):
         self._poller_factory = poller_factory
 
     def make_service(self, config_dict={}):
+        """ Make a GitPollerService from the provided configuration dictionary.
+
+        Configuration values:
+        poll-interval: duration between calls to the poll function
+        All other values are dictated by the buildbot hook and GitRepo
+        factories.
+        """
         if self._poller_factory is None:
             raise ValueError("GitPollerServiceFactory requires a "
                              "GitPollerFactory")
