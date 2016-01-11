@@ -1,6 +1,6 @@
 import logging
 
-from twobit.buildbotutil import BuildbotHookFactory
+from twobit.buildbotutil import BuildbotHookFactory, BuildbotHookFactoryValueError
 from twobit.twisted_gitpoller import GitPollerService
 
 class GitPollerServiceFactoryValueError(ValueError):
@@ -31,7 +31,12 @@ class GitPollerServiceFactory(object):
             raise GitPollerServiceFactoryValueError('poll-interval')
         step = int(config_dict['poll-interval'])
         if self._hook_factory is not None:
-            hook = self._hook_factory.make_buildbothook(config_dict)
+            try:
+                hook = self._hook_factory.make_buildbothook(config_dict)
+            except BuildbotHookFactoryValueError as err:
+                self._log.warning("Unable to create BuildbotHook: {0}"
+                                  .format(err.message))
+                hook = None
         else:
             hook = None
         poller = self._poller_factory.make_poller(config_dict = config_dict,
