@@ -21,9 +21,9 @@ $(tacconf_DATA): $(tacconf_DATA).in Makefile
 
 do_subst = sed -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
                -e 's,[@]CONFFILE[@],$(tacconfpath),g' \
-			   -e 's,[@]LOGDIR[@],$(taclogdir),g' \
-			   -e 's,[@]LIBDIR[@],$(taclibdir),g' \
-			   -e 's,[@]PIDFILE[@],$(tacpidfile),g'
+               -e 's,[@]LOGDIR[@],$(taclogdir),g' \
+               -e 's,[@]LIBDIR[@],$(taclibdir),g' \
+               -e 's,[@]PIDFILE[@],$(tacpidfile),g'
 
 # There's gotta be an easier way to do this
 install-data-hook: mklogdir mklibdir mkrundir
