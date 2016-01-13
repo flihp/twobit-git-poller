@@ -18,7 +18,7 @@ case "$1" in
     start)
         logger "${NAME}: starting"
         echo -n "Starting ${NAME} ... "
-        twistd --umask=0022 -l "${LOG}" --pidfile "${PID}" twobit_gitpoller --config=@CONFFILE@
+        twistd --umask=0022 -l "${LOG}" --pidfile "${PID}" twobit_poller --config=@CONFFILE@
         if [ $? -eq 0 ]; then
             echo "success"
         else

@@ -1,8 +1,6 @@
 [DEFAULT]
 basedir = @LIBDIR@
-logdir = @LOGDIR@
-logfile = @PACKAGE@.log
-poll-interval = 60*1
+poll-interval = 300
 type = git
 hook-script = /usr/share/buildbot/contrib/git_buildbot.py
 hook-master = localhost
@@ -53,5 +51,5 @@ url = git://github.com/woglinde/meta-java.git
 [openxt]
 type = org
 name = openxt
-subdir = openxt
+basedir = @LIBDIR@/openxt
 hook-projects = ['openxt']
