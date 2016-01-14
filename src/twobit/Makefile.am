@@ -1,3 +1,9 @@
+buildbot = buildbotutil
+buildbotdir = $(pythondir)/twobit/buildbotutil
+buildbot_PYTHON = \
+    $(buildbot)/__init__.py \
+    $(buildbot)/buildbot_hook.py
+
 gitutil = gitutil
 gitutildir = $(pythondir)/twobit/gitutil
 gitutil_PYTHON = \
