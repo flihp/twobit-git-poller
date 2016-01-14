@@ -1,2 +1,34 @@
-SUBDIRS = src src/twobit_gitpoller src/twisted/plugins src/twobit
+SUBDIRS = src src/twobit_gitpoller src/twisted/plugins
 
+base = $(srcdir)/src
+twobit = $(base)/twobit
+twobitdir = $(pythondir)/twobit
+twobit_PYTHON = $(twobit)/__init__.py
+
+buildbot = $(twobit)/buildbotutil
+buildbotdir = $(pythondir)/twobit/buildbotutil
+buildbot_PYTHON = \
+    $(buildbot)/__init__.py \
+    $(buildbot)/buildbot_hook.py
+
+gitutil = $(base)/gitutil
+gitutildir = $(pythondir)/twobit/gitutil
+gitutil_PYTHON = \
+    $(gitutil)/__init__.py \
+	$(gitutil)/githuborg.py \
+	$(gitutil)/githuborgrepopoller.py \
+	$(gitutil)/gitpollerfactory.py \
+	$(gitutil)/gitpoller.py \
+    $(gitutil)/gitrepo.py \
+	$(gitutil)/ipoll.py
+
+twisted = $(base)/twisted_gitpoller
+twisted_pollerdir = $(pythondir)/twobit/twisted_gitpoller/
+twisted_poller_PYTHON = \
+    $(twisted)/__init__.py \
+	$(twisted)/githuborgrepopollerservice.py \
+	$(twisted)/gitpollerservice.py \
+	$(twisted)/gitpollerservicefactory.py \
+	$(twisted)/pollermultiservice.py
+
+MOSTLYCLEANFILES = *pyc *pyo
