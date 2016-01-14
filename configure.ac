@@ -5,6 +5,7 @@ AM_PATH_PYTHON([2.7.9])
 AC_CONFIG_SRCDIR([src/twobit-gitpoller.conf.in])
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 src/twobit/Makefile
                  src/twobit_gitpoller/Makefile
                  src/twobit/buildbotutil/Makefile
                  src/twobit/gitutil/Makefile
