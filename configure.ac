@@ -8,6 +8,5 @@ AC_CONFIG_FILES([Makefile
                  src/twobit/Makefile
                  src/twobit_gitpoller/Makefile
                  src/twobit/buildbotutil/Makefile
-                 src/twobit/gitutil/Makefile
                  src/twisted/plugins/Makefile])
 AC_OUTPUT
