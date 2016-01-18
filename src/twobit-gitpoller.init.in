@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          @PACKAGE@
 # Required-Start:    $local_fs $remote_fs $network $syslog
@@ -8,17 +8,21 @@
 # Short-Description: Start/stop @PACKAGE@
 ### END INIT INFO
 
-LOG=@LOGDIR@/@PACKAGE@.log
-NAME=@PACKAGE@
-PID=@PIDFILE@
 SERVER=$(which twistd)
-TAC=@PACKAGE@
+NAME=@PACKAGE@
+LOG_FILE=@LOGDIR@/@PACKAGE@.log
+PID_FILE=@PIDFILE@
+
+TWISTED_SERVICE=twobit_poller
+CONFIG=@CONFFILE@
+LOG_LEVEL=INFO
 
 case "$1" in
     start)
         logger "${NAME}: starting"
         echo -n "Starting ${NAME} ... "
-        twistd --umask=0022 -l "${LOG}" --pidfile "${PID}" twobit_poller --config=@CONFFILE@
+        twistd --umask=0022 --logfile="${LOG_FILE}" --pidfile "${PID_FILE}" \
+            "${TWISTED_SERVICE}" --config=${CONFIG} --log-level="${LOG_LEVEL}"
         if [ $? -eq 0 ]; then
             echo "success"
         else

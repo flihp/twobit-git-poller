@@ -11,42 +11,52 @@ hook-logfile = /tmp/git_buildbot.log
 
 [aes-pipe]
 url = git://github.com/flihp/aes-pipe.git
+gitdir = aes-pipe.git
 hook-projects = ['aes-pipe']
 
 [bitbake]
 url = git://github.com/openembedded/bitbake.git
+gitdir = bitbake.git
 hook-projects = ['bitbake']
 
 [meta-measured]
 url = git://github.com/flihp/meta-measured.git
+gitdir = meta-measured.git
 hook-projects = ['meta-measured']
 
 [oe-build-scripts]
 url = git://github.com/flihp/oe-build-scripts.git
+gitdir = oe-build-scripts.git
 hook-projects = ['core-image-minimal', 'meta-measured', 'meta-selinux']
 
 [openembedded-core]
 url = git://github.com/openembedded/openembedded-core.git
+gitdir = openembedded-core.git
 hook-projects = ['openembedded-core']
 
 [meta-intel]
 url = git://git.yoctoproject.org/meta-intel
+gitdir = meta-intel.git
 hook-projects = ['meta-intel']
 
 [meta-selinux]
 url = git://github.com/flihp/meta-selinux
+gitdir = meta-selinux.git
 hook-projects = ['meta-selinux']
 
 [meta-virtualization]
 url = git://git.yoctoproject.org/meta-virtualization
+gitdir = meta-virtualization.git
 hook-projects = ['meta-selinux']
 
 [meta-openembedded]
 url = git://git.openembedded.org/meta-openembedded
+gitdir = meta-openembedded.git
 hook-projects = ['meta-selinux']
 
 [meta-java]
 url = git://github.com/woglinde/meta-java.git
+gitdir = meta-java.git
 
 [openxt]
 type = org
