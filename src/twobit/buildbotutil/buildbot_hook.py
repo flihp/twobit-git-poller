@@ -51,6 +51,8 @@ class BuildbotHook(object):
             p = subprocess.Popen(cmd, env=env, stdin=subprocess.PIPE)
             p.stdin.write('{0} {1} {2}\n'
                           .format(data[1], data[2], data[0]))
+            p.stdin.close()
+            p.wait()
 
 class BuildbotHookFactoryValueError(Exception):
     def __init__(self, message):
