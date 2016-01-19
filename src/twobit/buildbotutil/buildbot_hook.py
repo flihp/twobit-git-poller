@@ -19,14 +19,15 @@ class BuildbotHook(object):
         self.projects = projects
         self.logfile = logfile
 
-    def exec_hook(self, data=(), gitdir=None):
+    def exec_hook(self, tripples=[], gitdir=None):
         """ Execute the hook script.
 
-        The data parameter is a tripple of the branch name, the
-        hash of the HEAD of this branch before an update, and the
-        hash of the HEAD of the same branch after an update.
+        The 'tripples' parameter is a list of tripples. Each tripple is
+        in the form:  branch name, the hash of the HEAD of this branch
+        before the update, and the hash of the HEAD of the same branch
+        after an update.
 
-        NOTE: the data parameter should be a tripple:
+        NOTE: each tripple is in the form:
               (symname, hash before update, hash after update)
         """
         if self.script is None:
@@ -49,8 +50,9 @@ class BuildbotHook(object):
             log.info("executing hook script: {0} with environment {1}"
                      .format(cmd, env))
             p = subprocess.Popen(cmd, env=env, stdin=subprocess.PIPE)
-            p.stdin.write('{0} {1} {2}\n'
-                          .format(data[1], data[2], data[0]))
+            for tripple in tripples:
+                p.stdin.write('{0} {1} {2}\n'
+                              .format(tripple[1], tripple[2], tripple[0]))
             p.stdin.close()
             p.wait()
 

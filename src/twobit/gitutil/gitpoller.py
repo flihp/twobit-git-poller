@@ -91,8 +91,10 @@ class GitPoller(IPoll):
            self._log.critical(excep)
         if self._hook is not None:
             # execute the hook script for each branch
+            hook_tripples=[]
             for hook_set in hook_data:
                 new_hash = self._repo.get_hash(hook_set[0])
-                self._hook.exec_hook(data=(hook_set[0], hook_set[1], new_hash), gitdir=self._gitdir)
+                hook_tripples.append((hook_set[0], hook_set[1], new_hash))
+            self._hook.exec_hook(tripples=hook_tripples, gitdir=self._gitdir)
         else:
             self._log.info("No hook object, skipping")

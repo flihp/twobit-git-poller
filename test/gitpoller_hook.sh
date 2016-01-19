@@ -24,12 +24,21 @@ repo_mirror () {
     git clone --mirror ${REPO_REMOTE} ${REPO_MIRROR}
 }
 
+# create new branch in REPO_WORK and push to remote
+repo_branch () {
+    local REPO_WORK=$1
+    local BRANCH=$2
+
+    git --git-dir=${REPO_WORK}/.git --work-tree=${REPO_WORK} checkout -b ${BRANCH}
+    git --git-dir=${REPO_WORK}/.git --work-tree=${REPO_WORK} push origin ${BRANCH}
+}
+
 # write a file in a git work-tree then push it to the remote so the
 # poller will know
 repo_commit () {
     local REPO_WORK=$1
     local FILE=$2
-    local BRANCH=${3:master}
+    local BRANCH=${3:-master}
 
     while read LINE; do
         echo ${LINE}
@@ -51,7 +60,7 @@ repo_poll () {
         echo "REPO_MIRROR: ${REPO_MIRROR} exists!"
     fi
 
-    PYTHONPATH+=../src/ ./${BASE}.py --gitdir=${REPO_MIRROR} --basedir=${BASE_DIR} --remote=${REPO_REMOTE} --hook-script=${HOOK_SH} --log-level=DEBUG
+    PYTHONPATH=../src/ ./${BASE}.py --gitdir=${REPO_MIRROR} --basedir=${BASE_DIR} --remote=${REPO_REMOTE} --hook-script=${HOOK_SH} --log-level=DEBUG
     if [ $? -ne 0 ]; then
         echo "TEST FAILED"
         exit $?
@@ -64,10 +73,14 @@ repo_init ${REPO_REMOTE} ${REPO_WORK}
 # add a test file & commit
 echo "test0" | { repo_commit ${REPO_WORK} test_file0; }
 
+# add a new branch
+repo_branch ${REPO_WORK} "test_branch"
+echo "blarg0" | { repo_commit ${REPO_WORK} blarg_file0 "test_branch"; }
 repo_mirror ${REPO_REMOTE} ${REPO_MIRROR}
 
 # add another file & commit
 echo "test1" | { repo_commit ${REPO_WORK} test_file1; }
+echo "blarg1" | { repo_commit ${REPO_WORK} blarg_file1 "test_branch"; }
 # one more time for good measure
 echo "Polling ${REPO_REMOTE}"
 repo_poll ${REPO_REMOTE} ${BASE_DIR} ${REPO_MIRROR} ${HOOK_SH}
