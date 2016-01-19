@@ -1,5 +1,3 @@
-SUBDIRS = src/twobit_gitpoller
-
 base = $(srcdir)/src
 twobit = $(base)/twobit
 twobitdir = $(pythondir)/twobit
