@@ -39,7 +39,9 @@ def main():
                         port='666',
                         user='test_user',
                         passwd='test_passwd',
-                        projects=['test_project'],
+                        projects=[ 'test_project0',
+                                   'test_project1',
+                                   'test_project2' ],
                         logfile='test_logfile.log')
     poller = GitPoller(repo=repo,
                        mirror=mirror,
