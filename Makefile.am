@@ -31,7 +31,6 @@ twisted_poller_PYTHON = \
 plugin = $(base)/twisted/plugins
 plugindir = $(pythondir)/twisted/plugins
 plugin_PYTHON = \
-    $(plugin)/twobit_gitpoller_plugin.py \
 	$(plugin)/twobit_poller_plugin.py
 
 MOSTLYCLEANFILES = *pyc *pyo
