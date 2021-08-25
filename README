@@ -1,3 +1,5 @@
+NOTE: This repo is no longer maintained.
+
 This is a mostly simple twisted python daemon that mirrors remote git repos locally.
 On a configurable interval the daemon wakes up and does the standard 'git clone --mirror' if it doesn't yet exist or 'git remote update' if it does.
 Which repos to mirror are specific via a config file written in the format parsed by the Python ConfigParser.
